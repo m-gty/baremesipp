@@ -31,3 +31,15 @@ bareme_ir <- brut |>
 
 # 6. Enregistrer comme donnée du package
 usethis::use_data(bareme_ir, overwrite = TRUE)
+
+bareme_ir |> filter(annee_revenus == 2023)
+
+bareme_ir |> filter(annee_revenus == 2012)
+bareme_ir |> filter(annee_revenus == 1985)
+
+
+
+
+
+
+usethis::use_r("calc_ir")
