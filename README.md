@@ -48,7 +48,9 @@ Les montants sont exprimés dans la monnaie de l'année : anciens francs jusqu'e
 
 Les barèmes couvrent les revenus de 1945 à 2023. Quand le barème n'a pas changé une année donnée, le dernier barème en vigueur s'applique.
 
-Toutes les données proviennent des **Barèmes IPP**, produits par l'[Institut des politiques publiques](https://www.ipp.eu/). Si vous les utilisez, merci de citer l'IPP. Le script de nettoyage est disponible dans `data-raw/`.
+Toutes les données proviennent des **Barèmes IPP** produits par l'[Institut des politiques publiques](https://www.ipp.eu/), diffusés sous [Licence Ouverte / Open Licence](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) ([fiche data.gouv.fr](https://www.data.gouv.fr/datasets/baremes-ipp-systeme-social-et-fiscal-francais)). Données téléchargées en octobre 2026. Si vous les utilisez, merci de citer l'IPP.
+
+Le script de nettoyage est disponible dans `data-raw/`.
 
 ## Feuille de route
 
