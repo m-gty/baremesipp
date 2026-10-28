@@ -18,10 +18,16 @@ test_that("une année sans nouveau barème reprend le précédent", {
 })
 
 test_that("une année hors période renvoie une erreur", {
-  expect_error(calc_ir(30000, annee = 2025))
+  expect_error(calc_ir(30000, annee = 2030))
   expect_error(calc_ir(30000, annee = 1900))
+})
+
+test_that("les barèmes ajoutés depuis les lois de finances sont corrects", {
+  expect_equal(calc_ir(30000, annee = 2024), 2165.48)
+  expect_equal(calc_ir(30000, annee = 2025), 2103.99)
 })
 
 test_that("plusieurs revenus donnent plusieurs résultats", {
   expect_length(calc_ir(c(20000, 50000, 100000), annee = 2023), 3)
 })
+

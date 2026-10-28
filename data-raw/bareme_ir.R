@@ -24,4 +24,13 @@ bareme_ir <- brut |>
   select(annee_revenus, annee_imposition, tranche, seuil, taux, monnaie) |>
   arrange(annee_revenus, tranche)
 
+# 7. Barèmes absents des Barèmes IPP, saisis depuis les lois de finances
+#    Revenus 2024 : loi de finances pour 2025 (JO du 15/02/2025), art. 2
+#    Revenus 2025 : loi de finances pour 2026 (promulguée le 19/02/2026)
+complement <- read_csv("data-raw/bareme_ir_complement.csv",
+                       col_types = "iiiddc")
+
+bareme_ir <- bind_rows(bareme_ir, complement) |>
+  arrange(annee_revenus, tranche)
+
 usethis::use_data(bareme_ir, overwrite = TRUE)
