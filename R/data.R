@@ -38,3 +38,18 @@
 #' @source Barèmes IPP, Institut des politiques publiques,
 #'   \url{https://www.ipp.eu/baremes-ipp/} ; revenus 2025 : article 197 du CGI.
 "decote"
+
+#' Indice des prix à la consommation (depuis 1901)
+#'
+#' Indice des prix à la consommation en moyenne annuelle, base 100 en 2025.
+#' Il mesure l'inflation seule, sans les changements de monnaie.
+#'
+#' @format Un data frame avec 2 colonnes :
+#' \describe{
+#'   \item{annee}{Année}
+#'   \item{indice}{Indice des prix, base 100 en 2025}
+#' }
+#'
+#' @source INSEE, « Coefficient de transformation de l'euro ou du franc d'une
+#'   année en euro ou en franc d'une autre année - Base 2025 », via DBnomics.
+"ipc"

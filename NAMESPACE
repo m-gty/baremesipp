@@ -2,3 +2,5 @@
 
 export(calc_decote)
 export(calc_ir)
+export(calc_ir_constant)
+export(en_euros_constants)
