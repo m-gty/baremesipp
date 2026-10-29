@@ -1,4 +1,4 @@
-# baremesipp (development version)
+# baremesipp 0.1.0
 
 Première version publique.
 

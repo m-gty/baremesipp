@@ -1,6 +1,6 @@
 Package: baremesipp
 Title: Historical French Income Tax Schedules
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person("Mayeul", "Gourtay", email = "mayeul.gourtay@ens.psl.eu", role = c("aut", "cre"))
 Description: Provides the schedules of the French personal income tax since
