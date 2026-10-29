@@ -41,3 +41,15 @@ taux |>
   mutate(ecart = round(ecart, 1)) |>
   select(annee, prelevement, ecart) |>
   pivot_wider(names_from = prelevement, values_from = ecart)
+
+# Variante : écart total avec le SMIC net des aides
+panel_aides <- readRDS("working-paper/panel_A_aides.rds")
+ecart_aides <- panel |>
+  filter(cas == "C") |>
+  select(annee, taux_C = taux_prelevements) |>
+  left_join(select(panel_aides, annee, taux_A = taux_prelevements), by = "annee") |>
+  mutate(ecart = 100 * (taux_C - taux_A))
+
+ecart_aides |>
+  filter(annee %in% c(1981, 2000, 2006, 2010, 2016, 2019, 2025)) |>
+  mutate(across(c(taux_C, taux_A), \(x) round(100 * x, 1)), ecart = round(ecart, 1))
