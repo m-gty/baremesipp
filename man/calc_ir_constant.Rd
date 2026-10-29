@@ -10,13 +10,15 @@ calc_ir_constant(
   annee_ref = 2025,
   parts = 1,
   couple = FALSE,
-  decote = FALSE
+  decote = FALSE,
+  salaire = FALSE
 )
 }
 \arguments{
-\item{revenu}{Revenu net imposable, en euros de \code{annee_ref}.}
+\item{revenu}{Revenu net imposable, ou salaire déclaré si
+\code{salaire = TRUE}, en euros de \code{annee_ref}.}
 
-\item{annee}{Année dont on applique le barème.}
+\item{annee}{Année dont on applique les règles.}
 
 \item{annee_ref}{Année de référence des montants. Par défaut 2025.}
 
@@ -26,26 +28,30 @@ calc_ir_constant(
 pour la décote).}
 
 \item{decote}{\code{TRUE} pour appliquer la décote (revenus 2001 et après).}
+
+\item{salaire}{\code{TRUE} pour interpréter \code{revenu} comme le salaire déclaré
+d'un salarié : les abattements de l'année \code{annee} (10 et 20 pour cent)
+sont alors appliqués, ce qui rend les comparaisons historiques plus
+fiables (revenus 1979 et après).}
 }
 \value{
 L'impôt, en euros de \code{annee_ref}.
 }
 \description{
-Répond à la question : combien paierait un foyer dont le revenu est
-exprimé en euros de \code{annee_ref}, si on lui appliquait le barème de l'année
-\code{annee} ? Le revenu est converti dans la monnaie et le niveau de prix de
-\code{annee}, l'impôt est calculé, puis reconverti en euros de \code{annee_ref}.
+Répond à la question : combien paierait un foyer dont le revenu (ou le
+salaire) est exprimé en euros de \code{annee_ref}, si on lui appliquait les
+règles de l'année \code{annee} ? Le montant est converti dans la monnaie et le
+niveau de prix de \code{annee}, l'impôt est calculé, puis reconverti en euros
+de \code{annee_ref}.
 }
 \details{
-La comparaison se fait à revenu net imposable égal. La définition
-de ce revenu a changé dans le temps (par exemple, l'abattement de 20
-pour cent sur les salaires, intégré au barème en 2006) et les taxes
-complémentaires d'avant 1970 ne sont pas incluses : les comparaisons
-lointaines sont donc indicatives.
+Avec \code{salaire = FALSE}, la comparaison se fait à revenu net
+imposable égal, dont la définition a changé dans le temps (abattement de
+20 pour cent sur les salaires jusqu'en 2005). Préférer \code{salaire = TRUE}
+pour comparer des foyers de salariés.
 }
 \examples{
-# Un célibataire à 30 000 euros de 2025, sous les barèmes de 1985 et 2025
 calc_ir_constant(30000, annee = 1985)
-calc_ir_constant(30000, annee = 2025)
+calc_ir_constant(33333, annee = 1985, salaire = TRUE)
 
 }

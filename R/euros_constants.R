@@ -43,34 +43,40 @@ en_euros_constants <- function(montant, annee, annee_ref = 2025) {
 
 #' Calculer l'impôt sous le barème d'une autre année, en euros constants
 #'
-#' Répond à la question : combien paierait un foyer dont le revenu est
-#' exprimé en euros de `annee_ref`, si on lui appliquait le barème de l'année
-#' `annee` ? Le revenu est converti dans la monnaie et le niveau de prix de
-#' `annee`, l'impôt est calculé, puis reconverti en euros de `annee_ref`.
+#' Répond à la question : combien paierait un foyer dont le revenu (ou le
+#' salaire) est exprimé en euros de `annee_ref`, si on lui appliquait les
+#' règles de l'année `annee` ? Le montant est converti dans la monnaie et le
+#' niveau de prix de `annee`, l'impôt est calculé, puis reconverti en euros
+#' de `annee_ref`.
 #'
 #' @inheritParams calc_ir
-#' @param revenu Revenu net imposable, en euros de `annee_ref`.
-#' @param annee Année dont on applique le barème.
+#' @param revenu Revenu net imposable, ou salaire déclaré si
+#'   `salaire = TRUE`, en euros de `annee_ref`.
+#' @param annee Année dont on applique les règles.
 #' @param annee_ref Année de référence des montants. Par défaut 2025.
+#' @param salaire `TRUE` pour interpréter `revenu` comme le salaire déclaré
+#'   d'un salarié : les abattements de l'année `annee` (10 et 20 pour cent)
+#'   sont alors appliqués, ce qui rend les comparaisons historiques plus
+#'   fiables (revenus 1979 et après).
 #'
 #' @return L'impôt, en euros de `annee_ref`.
 #'
-#' @details La comparaison se fait à revenu net imposable égal. La définition
-#'   de ce revenu a changé dans le temps (par exemple, l'abattement de 20
-#'   pour cent sur les salaires, intégré au barème en 2006) et les taxes
-#'   complémentaires d'avant 1970 ne sont pas incluses : les comparaisons
-#'   lointaines sont donc indicatives.
+#' @details Avec `salaire = FALSE`, la comparaison se fait à revenu net
+#'   imposable égal, dont la définition a changé dans le temps (abattement de
+#'   20 pour cent sur les salaires jusqu'en 2005). Préférer `salaire = TRUE`
+#'   pour comparer des foyers de salariés.
 #'
 #' @examples
-#' # Un célibataire à 30 000 euros de 2025, sous les barèmes de 1985 et 2025
 #' calc_ir_constant(30000, annee = 1985)
-#' calc_ir_constant(30000, annee = 2025)
+#' calc_ir_constant(33333, annee = 1985, salaire = TRUE)
 #'
 #' @export
 calc_ir_constant <- function(revenu, annee, annee_ref = 2025, parts = 1,
-                             couple = FALSE, decote = FALSE) {
+                             couple = FALSE, decote = FALSE, salaire = FALSE) {
   f <- facteur_euros_constants(annee, annee_ref)
-  impot <- calc_ir(revenu / f, parts = parts, annee = annee,
+  montant <- revenu / f
+  if (salaire) montant <- revenu_imposable_salaire(montant, annee)
+  impot <- calc_ir(montant, parts = parts, annee = annee,
                    couple = couple, decote = decote)
   impot * f
 }

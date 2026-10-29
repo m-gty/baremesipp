@@ -3,4 +3,6 @@
 export(calc_decote)
 export(calc_ir)
 export(calc_ir_constant)
+export(calc_ir_salaire)
 export(en_euros_constants)
+export(revenu_imposable_salaire)

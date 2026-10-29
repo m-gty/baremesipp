@@ -53,3 +53,26 @@
 #' @source INSEE, « Coefficient de transformation de l'euro ou du franc d'une
 #'   année en euro ou en franc d'une autre année - Base 2025 », via DBnomics.
 "ipc"
+
+#' Abattements sur les salaires (depuis 1942)
+#'
+#' Paramètres de la déduction forfaitaire de 10 pour cent pour frais
+#' professionnels et de l'abattement supplémentaire de 20 pour cent
+#' (supprimé à partir des revenus 2006), une ligne par année de modification.
+#'
+#' @format Un tibble avec 9 colonnes :
+#' \describe{
+#'   \item{annee_revenus}{Année de perception des revenus}
+#'   \item{annee_imposition}{Année d'imposition}
+#'   \item{abatpro_taux}{Taux de la déduction pour frais professionnels}
+#'   \item{abatpro_min}{Minimum de la déduction, par salarié}
+#'   \item{abatpro_min2}{Minimum majoré pour les chômeurs de longue durée}
+#'   \item{abatpro_max}{Plafond de la déduction, par salarié}
+#'   \item{abat_supp_taux}{Taux de l'abattement supplémentaire}
+#'   \item{abat_supp_max}{Plafond de l'abattement supplémentaire}
+#'   \item{abat_supp_salaire_plafond}{Plafond de salaire correspondant}
+#' }
+#'
+#' @source Barèmes IPP, Institut des politiques publiques ; revenus 2025 :
+#'   article 83 du CGI.
+"abattements_salaires"
