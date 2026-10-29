@@ -165,3 +165,17 @@
 #'
 #' @source Barèmes IPP, Institut des politiques publiques.
 "smic"
+
+#' Prime pour l'emploi (revenus 2000-2016)
+#'
+#' Paramètres de la prime pour l'emploi, une ligne par année de modification.
+#' Les paramètres de 2007 s'appliquent jusqu'aux revenus 2015 ; la prime est
+#' supprimée à partir des revenus 2016.
+#'
+#' @format Un tibble avec 12 colonnes : année des revenus, existence de la
+#'   prime, seuils de revenu d'activité (minimum, taux plein, maximum), seuils
+#'   de revenu fiscal de référence, taux d'entrée et de sortie, majoration par
+#'   personne à charge et montant minimum versé.
+#'
+#' @source Barèmes IPP, Institut des politiques publiques.
+"ppe"

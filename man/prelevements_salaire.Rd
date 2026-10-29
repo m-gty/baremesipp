@@ -16,7 +16,9 @@ prelevements_salaire(
   decote = FALSE,
   plafonnement = FALSE,
   cadre = FALSE,
-  cadre2 = FALSE
+  cadre2 = FALSE,
+  ppe = FALSE,
+  personnes_charge = 0
 )
 }
 \arguments{
@@ -39,16 +41,22 @@ le seuil de la décote.}
 demi-parts supplémentaires (revenus 1981 et après).}
 
 \item{cadre, cadre2}{\code{TRUE} si le premier (ou le second) salarié est cadre.}
+
+\item{ppe}{\code{TRUE} pour déduire la prime pour l'emploi (revenus 2000-2015).}
+
+\item{personnes_charge}{Nombre de personnes à charge (majoration de la PPE).}
 }
 \value{
 Un data frame avec, pour chaque salaire : \code{brut} (total du foyer),
-\code{cotisations}, \code{csg}, \code{crds}, \code{net_imposable}, \code{impot}, \code{net_apres_impot}
-et \code{taux_prelevements} (part du brut prélevée).
+\code{cotisations}, \code{csg}, \code{crds}, \code{net_imposable}, \code{impot}, \code{ppe},
+\code{net_apres_impot} et \code{taux_prelevements} (part du brut prélevée, nette de
+la prime pour l'emploi).
 }
 \description{
 Part du salaire brut annuel et calcule, pour des salariés du secteur
 privé, les cotisations salariales, la CSG, la CRDS, le salaire net
-imposable, puis l'impôt sur le revenu du foyer.
+imposable, puis l'impôt sur le revenu du foyer et, sur option, la prime
+pour l'emploi.
 }
 \details{
 Cotisations du régime général et de l'assurance chômage, et
@@ -63,5 +71,6 @@ santé réintégrée au revenu imposable et les régimes spéciaux.
 \examples{
 prelevements_salaire(30000, annee = 2025)
 prelevements_salaire(80000, annee = 2010, cadre = TRUE)
+prelevements_salaire(15000, annee = 2007, ppe = TRUE)
 
 }

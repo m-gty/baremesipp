@@ -14,7 +14,9 @@ prelevements_salaire_constant(
   decote = FALSE,
   plafonnement = FALSE,
   cadre = FALSE,
-  cadre2 = FALSE
+  cadre2 = FALSE,
+  ppe = FALSE,
+  personnes_charge = 0
 )
 }
 \arguments{
@@ -38,6 +40,10 @@ le seuil de la décote.}
 demi-parts supplémentaires (revenus 1981 et après).}
 
 \item{cadre, cadre2}{\code{TRUE} si le premier (ou le second) salarié est cadre.}
+
+\item{ppe}{\code{TRUE} pour déduire la prime pour l'emploi (revenus 2000-2015).}
+
+\item{personnes_charge}{Nombre de personnes à charge (majoration de la PPE).}
 }
 \value{
 Le même data frame que \code{\link[=prelevements_salaire]{prelevements_salaire()}}, en euros de

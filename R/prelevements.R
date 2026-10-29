@@ -39,7 +39,8 @@ montant_csg_crds <- function(brut, annee) {
 #'
 #' Part du salaire brut annuel et calcule, pour des salariés du secteur
 #' privé, les cotisations salariales, la CSG, la CRDS, le salaire net
-#' imposable, puis l'impôt sur le revenu du foyer.
+#' imposable, puis l'impôt sur le revenu du foyer et, sur option, la prime
+#' pour l'emploi.
 #'
 #' @inheritParams calc_ir
 #' @param brut Salaire brut annuel du premier salarié, dans la monnaie de
@@ -47,10 +48,13 @@ montant_csg_crds <- function(brut, annee) {
 #' @param brut2 Salaire brut annuel du second salarié du foyer. Par défaut 0.
 #' @param annee Année des revenus (1979-2025).
 #' @param cadre,cadre2 `TRUE` si le premier (ou le second) salarié est cadre.
+#' @param ppe `TRUE` pour déduire la prime pour l'emploi (revenus 2000-2015).
+#' @param personnes_charge Nombre de personnes à charge (majoration de la PPE).
 #'
 #' @return Un data frame avec, pour chaque salaire : `brut` (total du foyer),
-#'   `cotisations`, `csg`, `crds`, `net_imposable`, `impot`, `net_apres_impot`
-#'   et `taux_prelevements` (part du brut prélevée).
+#'   `cotisations`, `csg`, `crds`, `net_imposable`, `impot`, `ppe`,
+#'   `net_apres_impot` et `taux_prelevements` (part du brut prélevée, nette de
+#'   la prime pour l'emploi).
 #'
 #' @details Cotisations du régime général et de l'assurance chômage, et
 #'   retraite complémentaire : ARRCO, ASF, AGFF pour les non-cadres ; ARRCO
@@ -66,11 +70,13 @@ montant_csg_crds <- function(brut, annee) {
 #' @examples
 #' prelevements_salaire(30000, annee = 2025)
 #' prelevements_salaire(80000, annee = 2010, cadre = TRUE)
+#' prelevements_salaire(15000, annee = 2007, ppe = TRUE)
 #'
 #' @export
 prelevements_salaire <- function(brut, annee, brut2 = 0, parts = 1, couple = FALSE,
                                  decote = FALSE, plafonnement = FALSE,
-                                 cadre = FALSE, cadre2 = FALSE) {
+                                 cadre = FALSE, cadre2 = FALSE,
+                                 ppe = FALSE, personnes_charge = 0) {
   cot1 <- montant_cotisations(brut, annee, cadre)
   cot2 <- montant_cotisations(brut2, annee, cadre2)
   cc1  <- montant_csg_crds(brut, annee)
@@ -83,14 +89,23 @@ prelevements_salaire <- function(brut, annee, brut2 = 0, parts = 1, couple = FAL
                            parts = parts, couple = couple, decote = decote,
                            plafonnement = plafonnement)
 
+  # Prime pour l'emploi (crédit d'impôt, revenus 2000-2015)
+  montant_ppe <- 0 * brut
+  if (ppe) {
+    rfr <- revenu_imposable_salaire(net_imp1, annee) + revenu_imposable_salaire(net_imp2, annee)
+    montant_ppe <- calc_ppe(net_imp1, rfr = rfr, annee = annee, revenu2 = net_imp2,
+                            parts = parts, couple = couple,
+                            personnes_charge = personnes_charge)
+  }
+
   brut_total <- brut + brut2
   cotisations <- cot1 + cot2
   csg  <- cc1$csg + cc2$csg
   crds <- cc1$crds + cc2$crds
-  net_apres_impot <- brut_total - cotisations - csg - crds - impot
+  net_apres_impot <- brut_total - cotisations - csg - crds - impot + montant_ppe
 
   data.frame(brut = brut_total, cotisations = cotisations, csg = csg, crds = crds,
-             net_imposable = net_imp1 + net_imp2, impot = impot,
+             net_imposable = net_imp1 + net_imp2, impot = impot, ppe = montant_ppe,
              net_apres_impot = net_apres_impot,
              taux_prelevements = (brut_total - net_apres_impot) / brut_total)
 }
@@ -117,13 +132,15 @@ prelevements_salaire <- function(brut, annee, brut2 = 0, parts = 1, couple = FAL
 prelevements_salaire_constant <- function(brut, annee, annee_ref = 2025, brut2 = 0,
                                           parts = 1, couple = FALSE, decote = FALSE,
                                           plafonnement = FALSE,
-                                          cadre = FALSE, cadre2 = FALSE) {
+                                          cadre = FALSE, cadre2 = FALSE,
+                                          ppe = FALSE, personnes_charge = 0) {
   f <- facteur_euros_constants(annee, annee_ref)
   res <- prelevements_salaire(brut / f, annee = annee, brut2 = brut2 / f, parts = parts,
                               couple = couple, decote = decote,
                               plafonnement = plafonnement,
-                              cadre = cadre, cadre2 = cadre2)
-  montants <- c("brut", "cotisations", "csg", "crds", "net_imposable", "impot",
+                              cadre = cadre, cadre2 = cadre2,
+                              ppe = ppe, personnes_charge = personnes_charge)
+  montants <- c("brut", "cotisations", "csg", "crds", "net_imposable", "impot", "ppe",
                 "net_apres_impot")
   res[montants] <- res[montants] * f
   res
