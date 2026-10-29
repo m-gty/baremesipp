@@ -8,7 +8,7 @@ Barèmes IPP, Institut des politiques publiques,
 \url{https://www.ipp.eu/baremes-ipp/}
 }
 \usage{
-calc_ir(revenu, parts = 1, annee)
+calc_ir(revenu, parts = 1, annee, couple = FALSE, decote = FALSE)
 }
 \arguments{
 \item{revenu}{Revenu net imposable du foyer (un ou plusieurs montants),
@@ -18,14 +18,21 @@ francs jusqu'en 2000, euros ensuite.}
 \item{parts}{Nombre de parts de quotient familial. Par défaut 1.}
 
 \item{annee}{Année de perception des revenus (et non année d'imposition).}
+
+\item{couple}{\code{TRUE} pour un couple soumis à imposition commune (utile
+pour la décote).}
+
+\item{decote}{\code{TRUE} pour appliquer la décote (revenus 2001 et après).}
 }
 \value{
-Un vecteur numérique : l'impôt brut, avant décote, plafonnement du
-quotient familial, réductions et crédits d'impôt.
+Un vecteur numérique : l'impôt issu du barème, après décote si
+\code{decote = TRUE}, mais avant plafonnement du quotient familial,
+réductions et crédits d'impôt.
 }
 \description{
 Applique le barème progressif de l'impôt sur le revenu d'une année donnée
-au revenu net imposable d'un foyer, selon le mécanisme du quotient familial.
+au revenu net imposable d'un foyer, selon le mécanisme du quotient familial,
+et peut appliquer la décote.
 }
 \details{
 Quand le barème n'a pas changé une année donnée, le dernier
@@ -34,5 +41,6 @@ barème en vigueur est appliqué.
 \examples{
 calc_ir(30000, parts = 1, annee = 2023)
 calc_ir(c(20000, 50000, 100000), parts = 2, annee = 2023)
+calc_ir(20000, annee = 2024, decote = TRUE)
 
 }

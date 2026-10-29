@@ -25,8 +25,9 @@ bareme_ir <- brut |>
   arrange(annee_revenus, tranche)
 
 # 7. Barèmes absents des Barèmes IPP, saisis depuis les lois de finances
-#    Revenus 2024 : loi de finances pour 2025 (JO du 15/02/2025), art. 2
-#    Revenus 2025 : loi de finances pour 2026 (promulguée le 19/02/2026)
+#    Revenus 2024 : loi n° 2025-127 du 14/02/2025 (LF pour 2025), art. 2
+#    Revenus 2025 : loi n° 2026-103 du 19/02/2026 (LF pour 2026), art. 4
+#    Source : article 197 du CGI, versions en vigueur, Légifrance
 complement <- read_csv("data-raw/bareme_ir_complement.csv",
                        col_types = "iiiddc")
 
