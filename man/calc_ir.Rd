@@ -5,10 +5,17 @@
 \title{Calculer l'impôt sur le revenu d'un foyer}
 \source{
 Barèmes IPP, Institut des politiques publiques,
-\url{https://www.ipp.eu/baremes-ipp/}
+\url{https://www.ipp.eu/baremes-ipp/} ; article 197 du CGI.
 }
 \usage{
-calc_ir(revenu, parts = 1, annee, couple = FALSE, decote = FALSE)
+calc_ir(
+  revenu,
+  parts = 1,
+  annee,
+  couple = FALSE,
+  decote = FALSE,
+  plafonnement = FALSE
+)
 }
 \arguments{
 \item{revenu}{Revenu net imposable du foyer (un ou plusieurs montants),
@@ -19,28 +26,36 @@ francs jusqu'en 2000, euros ensuite.}
 
 \item{annee}{Année de perception des revenus (et non année d'imposition).}
 
-\item{couple}{\code{TRUE} pour un couple soumis à imposition commune (utile
-pour la décote).}
+\item{couple}{\code{TRUE} pour un couple soumis à imposition commune. Sert à
+déterminer les parts de base (2 au lieu de 1) pour le plafonnement, et
+le seuil de la décote.}
 
 \item{decote}{\code{TRUE} pour appliquer la décote (revenus 2001 et après).}
+
+\item{plafonnement}{\code{TRUE} pour plafonner l'avantage procuré par les
+demi-parts supplémentaires (revenus 1981 et après).}
 }
 \value{
-Un vecteur numérique : l'impôt issu du barème, après décote si
-\code{decote = TRUE}, mais avant plafonnement du quotient familial,
-réductions et crédits d'impôt.
+Un vecteur numérique : l'impôt issu du barème, après plafonnement
+du quotient familial et décote si demandés, mais avant réductions et
+crédits d'impôt.
 }
 \description{
 Applique le barème progressif de l'impôt sur le revenu d'une année donnée
-au revenu net imposable d'un foyer, selon le mécanisme du quotient familial,
-et peut appliquer la décote.
+au revenu net imposable d'un foyer, selon le mécanisme du quotient familial.
+Peut appliquer le plafonnement des effets du quotient familial et la décote.
 }
 \details{
-Quand le barème n'a pas changé une année donnée, le dernier
-barème en vigueur est appliqué.
+Quand un paramètre n'a pas changé une année donnée, la dernière
+valeur en vigueur est appliquée. Le plafonnement utilise le plafond
+général par demi-part ; les plafonds spécifiques (parent isolé,
+invalidité, etc.) ne sont pas encore pris en compte.
 }
 \examples{
-calc_ir(30000, parts = 1, annee = 2023)
-calc_ir(c(20000, 50000, 100000), parts = 2, annee = 2023)
-calc_ir(20000, annee = 2024, decote = TRUE)
+calc_ir(30000, parts = 1, annee = 2025)
+calc_ir(c(20000, 50000, 100000), parts = 2, annee = 2025, couple = TRUE)
+calc_ir(20000, annee = 2025, decote = TRUE)
+# Couple avec deux enfants (3 parts), avec plafonnement
+calc_ir(100000, parts = 3, annee = 2025, couple = TRUE, plafonnement = TRUE)
 
 }

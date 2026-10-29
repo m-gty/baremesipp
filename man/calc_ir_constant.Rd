@@ -24,8 +24,9 @@ calc_ir_constant(
 
 \item{parts}{Nombre de parts de quotient familial. Par défaut 1.}
 
-\item{couple}{\code{TRUE} pour un couple soumis à imposition commune (utile
-pour la décote).}
+\item{couple}{\code{TRUE} pour un couple soumis à imposition commune. Sert à
+déterminer les parts de base (2 au lieu de 1) pour le plafonnement, et
+le seuil de la décote.}
 
 \item{decote}{\code{TRUE} pour appliquer la décote (revenus 2001 et après).}
 

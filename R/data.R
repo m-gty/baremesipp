@@ -76,3 +76,22 @@
 #' @source Barèmes IPP, Institut des politiques publiques ; revenus 2025 :
 #'   article 83 du CGI.
 "abattements_salaires"
+
+#' Plafonnement des effets du quotient familial (depuis 1974)
+#'
+#' Plafonds de l'avantage fiscal procuré par les demi-parts de quotient
+#' familial, une ligne par année de modification.
+#'
+#' @format Un tibble dont les colonnes principales sont :
+#' \describe{
+#'   \item{annee_revenus}{Année de perception des revenus}
+#'   \item{general}{Plafond général par demi-part (depuis les revenus 1981)}
+#'   \item{celib_enf}{Plafond pour la part du premier enfant d'un parent isolé}
+#'   \item{celib}{Plafond pour certaines demi-parts spécifiques}
+#' }
+#' Les autres colonnes reprennent des dispositifs particuliers, non encore
+#' utilisés par [calc_ir()].
+#'
+#' @source Barèmes IPP, Institut des politiques publiques ; revenus 2025 :
+#'   article 197 du CGI.
+"plafonnement_qf"
