@@ -10,7 +10,8 @@ calc_ir_salaire(
   salaire2 = 0,
   parts = 1,
   couple = FALSE,
-  decote = FALSE
+  decote = FALSE,
+  plafonnement = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,9 @@ déterminer les parts de base (2 au lieu de 1) pour le plafonnement, et
 le seuil de la décote.}
 
 \item{decote}{\code{TRUE} pour appliquer la décote (revenus 2001 et après).}
+
+\item{plafonnement}{\code{TRUE} pour plafonner l'avantage procuré par les
+demi-parts supplémentaires (revenus 1981 et après).}
 }
 \value{
 L'impôt, calculé comme \code{\link[=calc_ir]{calc_ir()}} sur le revenu imposable obtenu
@@ -37,7 +41,7 @@ Calculer l'impôt sur le revenu à partir des salaires
 }
 \examples{
 calc_ir_salaire(22223, annee = 2024)
-calc_ir_salaire(30000, salaire2 = 25000, parts = 2, annee = 2024,
-                couple = TRUE, decote = TRUE)
+calc_ir_salaire(30000, salaire2 = 25000, parts = 3, annee = 2024,
+                couple = TRUE, decote = TRUE, plafonnement = TRUE)
 
 }

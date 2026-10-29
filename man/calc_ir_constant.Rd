@@ -2,7 +2,7 @@
 % Please edit documentation in R/euros_constants.R
 \name{calc_ir_constant}
 \alias{calc_ir_constant}
-\title{Calculer l'impôt sous le barème d'une autre année, en euros constants}
+\title{Calculer l'impôt sous les règles d'une autre année, en euros constants}
 \usage{
 calc_ir_constant(
   revenu,
@@ -11,6 +11,7 @@ calc_ir_constant(
   parts = 1,
   couple = FALSE,
   decote = FALSE,
+  plafonnement = FALSE,
   salaire = FALSE
 )
 }
@@ -29,6 +30,9 @@ déterminer les parts de base (2 au lieu de 1) pour le plafonnement, et
 le seuil de la décote.}
 
 \item{decote}{\code{TRUE} pour appliquer la décote (revenus 2001 et après).}
+
+\item{plafonnement}{\code{TRUE} pour plafonner l'avantage procuré par les
+demi-parts supplémentaires (revenus 1981 et après).}
 
 \item{salaire}{\code{TRUE} pour interpréter \code{revenu} comme le salaire déclaré
 d'un salarié : les abattements de l'année \code{annee} (10 et 20 pour cent)
@@ -54,5 +58,8 @@ pour comparer des foyers de salariés.
 \examples{
 calc_ir_constant(30000, annee = 1985)
 calc_ir_constant(33333, annee = 1985, salaire = TRUE)
+# Couple avec deux enfants, 80 000 euros de salaire
+calc_ir_constant(80000, annee = 1990, parts = 3, couple = TRUE,
+                 plafonnement = TRUE, salaire = TRUE)
 
 }

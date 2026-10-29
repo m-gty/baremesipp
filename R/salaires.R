@@ -55,13 +55,15 @@ revenu_imposable_salaire <- function(salaire, annee) {
 #'
 #' @examples
 #' calc_ir_salaire(22223, annee = 2024)
-#' calc_ir_salaire(30000, salaire2 = 25000, parts = 2, annee = 2024,
-#'                 couple = TRUE, decote = TRUE)
+#' calc_ir_salaire(30000, salaire2 = 25000, parts = 3, annee = 2024,
+#'                 couple = TRUE, decote = TRUE, plafonnement = TRUE)
 #'
 #' @export
 calc_ir_salaire <- function(salaire, annee, salaire2 = 0, parts = 1,
-                            couple = FALSE, decote = FALSE) {
+                            couple = FALSE, decote = FALSE,
+                            plafonnement = FALSE) {
   revenu <- revenu_imposable_salaire(salaire, annee) +
     revenu_imposable_salaire(salaire2, annee)
-  calc_ir(revenu, parts = parts, annee = annee, couple = couple, decote = decote)
+  calc_ir(revenu, parts = parts, annee = annee, couple = couple,
+          decote = decote, plafonnement = plafonnement)
 }

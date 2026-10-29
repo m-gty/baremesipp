@@ -41,7 +41,7 @@ en_euros_constants <- function(montant, annee, annee_ref = 2025) {
   montant * facteur_euros_constants(annee, annee_ref)
 }
 
-#' Calculer l'impôt sous le barème d'une autre année, en euros constants
+#' Calculer l'impôt sous les règles d'une autre année, en euros constants
 #'
 #' Répond à la question : combien paierait un foyer dont le revenu (ou le
 #' salaire) est exprimé en euros de `annee_ref`, si on lui appliquait les
@@ -69,14 +69,18 @@ en_euros_constants <- function(montant, annee, annee_ref = 2025) {
 #' @examples
 #' calc_ir_constant(30000, annee = 1985)
 #' calc_ir_constant(33333, annee = 1985, salaire = TRUE)
+#' # Couple avec deux enfants, 80 000 euros de salaire
+#' calc_ir_constant(80000, annee = 1990, parts = 3, couple = TRUE,
+#'                  plafonnement = TRUE, salaire = TRUE)
 #'
 #' @export
 calc_ir_constant <- function(revenu, annee, annee_ref = 2025, parts = 1,
-                             couple = FALSE, decote = FALSE, salaire = FALSE) {
+                             couple = FALSE, decote = FALSE,
+                             plafonnement = FALSE, salaire = FALSE) {
   f <- facteur_euros_constants(annee, annee_ref)
   montant <- revenu / f
   if (salaire) montant <- revenu_imposable_salaire(montant, annee)
-  impot <- calc_ir(montant, parts = parts, annee = annee,
-                   couple = couple, decote = decote)
+  impot <- calc_ir(montant, parts = parts, annee = annee, couple = couple,
+                   decote = decote, plafonnement = plafonnement)
   impot * f
 }
