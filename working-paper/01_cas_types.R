@@ -5,12 +5,12 @@ library(dplyr)
 library(ggplot2)
 
 cas_types <- tibble::tribble(
-  ~cas, ~libelle,                              ~k1, ~k2, ~parts, ~couple,
-  "A",  "Célibataire, 1 SMIC",                 1,   0,   1,      FALSE,
-  "B",  "Célibataire, 2 SMIC",                 2,   0,   1,      FALSE,
-  "C",  "Célibataire, 5 SMIC",                 5,   0,   1,      FALSE,
-  "D",  "Couple 1,5 + 1 SMIC, 2 enfants",      1.5, 1,   3,      TRUE,
-  "E",  "Couple 3 + 2 SMIC, 2 enfants",        3,   2,   3,      TRUE
+  ~cas, ~libelle,                              ~k1, ~k2, ~parts, ~couple, ~cadre1, ~cadre2,
+  "A",  "Célibataire, 1 SMIC",                 1,   0,   1,      FALSE,   FALSE,   FALSE,
+  "B",  "Célibataire, 2 SMIC",                 2,   0,   1,      FALSE,   FALSE,   FALSE,
+  "C",  "Célibataire cadre, 5 SMIC",           5,   0,   1,      FALSE,   TRUE,    FALSE,
+  "D",  "Couple 1,5 + 1 SMIC, 2 enfants",      1.5, 1,   3,      TRUE,    FALSE,   FALSE,
+  "E",  "Couple 3 + 2 SMIC, 2 enfants",        3,   2,   3,      TRUE,    TRUE,    FALSE
 )
 
 annees <- 1981:2025   # période où tous les paramètres sont disponibles
@@ -23,7 +23,8 @@ panel <- do.call(rbind, lapply(annees, function(a) {
     ct <- cas_types[i, ]
     r <- prelevements_salaire(ct$k1 * s, annee = a, brut2 = ct$k2 * s,
                               parts = ct$parts, couple = ct$couple,
-                              decote = TRUE, plafonnement = TRUE)
+                              decote = TRUE, plafonnement = TRUE,
+                              cadre = ct$cadre1, cadre2 = ct$cadre2)
     r[montants] <- en_euros_constants(r[montants], a)      # en euros de 2025
     data.frame(annee = a, cas = ct$cas, libelle = ct$libelle, r)
   }))

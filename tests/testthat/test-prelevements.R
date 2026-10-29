@@ -30,3 +30,17 @@ test_that("les prélèvements en euros constants sont neutres pour 2025", {
   expect_equal(prelevements_salaire_constant(30000, annee = 2025),
                prelevements_salaire(30000, annee = 2025))
 })
+
+test_that("un cadre paie en plus l'APEC depuis 2019", {
+  # 2025, 30 000 euros : seule l'APEC (0,024 %) distingue un cadre
+  expect_equal(baremesipp:::montant_cotisations(30000, 2025, cadre = TRUE) -
+                 baremesipp:::montant_cotisations(30000, 2025),
+               0.00024 * 30000, tolerance = 1e-6)
+})
+
+test_that("sous le plafond en 2015, un cadre paie en plus l'APEC et la CET", {
+  # APEC 0,024 % + CET 0,13 % = 0,154 % de 30 000 = 46,20
+  expect_equal(baremesipp:::montant_cotisations(30000, 2015, cadre = TRUE) -
+                 baremesipp:::montant_cotisations(30000, 2015),
+               46.2, tolerance = 1e-6)
+})

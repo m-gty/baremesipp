@@ -14,7 +14,9 @@ prelevements_salaire(
   parts = 1,
   couple = FALSE,
   decote = FALSE,
-  plafonnement = FALSE
+  plafonnement = FALSE,
+  cadre = FALSE,
+  cadre2 = FALSE
 )
 }
 \arguments{
@@ -35,6 +37,8 @@ le seuil de la décote.}
 
 \item{plafonnement}{\code{TRUE} pour plafonner l'avantage procuré par les
 demi-parts supplémentaires (revenus 1981 et après).}
+
+\item{cadre, cadre2}{\code{TRUE} si le premier (ou le second) salarié est cadre.}
 }
 \value{
 Un data frame avec, pour chaque salaire : \code{brut} (total du foyer),
@@ -42,21 +46,22 @@ Un data frame avec, pour chaque salaire : \code{brut} (total du foyer),
 et \code{taux_prelevements} (part du brut prélevée).
 }
 \description{
-Part du salaire brut annuel et calcule, pour un salarié non-cadre du
-secteur privé, les cotisations salariales, la CSG, la CRDS, le salaire net
+Part du salaire brut annuel et calcule, pour des salariés du secteur
+privé, les cotisations salariales, la CSG, la CRDS, le salaire net
 imposable, puis l'impôt sur le revenu du foyer.
 }
 \details{
-Les cotisations sont celles d'un salarié non-cadre du régime
-général : maladie, vieillesse, veuvage, chômage et retraite
-complémentaire (ARRCO, ASF, AGFF, AGIRC-ARRCO, CEG, CET). Les
-paramètres sont des moyennes annuelles pondérées par les mois. Ne sont
-pas pris en compte : les cotisations des cadres, la part patronale de la
-complémentaire santé réintégrée au revenu imposable (depuis 2014) et les
-régimes spéciaux.
+Cotisations du régime général et de l'assurance chômage, et
+retraite complémentaire : ARRCO, ASF, AGFF pour les non-cadres ; ARRCO
+sous le plafond, AGIRC, AGFF, CET et APEC pour les cadres ; AGIRC-ARRCO,
+CEG et CET pour tous depuis 2019. Paramètres en moyennes annuelles
+pondérées par les mois. Ne sont pas pris en compte : la garantie
+minimale de points des cadres (sans effet au-dessus d'environ 1,1 PSS),
+le forfait APEC d'avant 2011, la part patronale de la complémentaire
+santé réintégrée au revenu imposable et les régimes spéciaux.
 }
 \examples{
 prelevements_salaire(30000, annee = 2025)
-prelevements_salaire(c(25000, 50000, 100000), annee = 2025)
+prelevements_salaire(80000, annee = 2010, cadre = TRUE)
 
 }

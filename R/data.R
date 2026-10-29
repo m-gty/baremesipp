@@ -118,27 +118,31 @@
 #'   l'instruction n° 91-52-M9 du 17 avril 1991.
 "prelevements_sociaux"
 
-#' Cotisations salariales d'un non-cadre du secteur privé (1979-2025)
+#' Cotisations salariales du secteur privé (1979-2025)
 #'
-#' Taux salariaux par cotisation et par tranche de salaire, exprimée en
-#' multiples du plafond de la Sécurité sociale (PSS). Moyennes annuelles
-#' pondérées par le nombre de mois d'application.
+#' Taux salariaux par statut (non-cadre ou cadre), par cotisation et par
+#' tranche de salaire, exprimée en multiples du plafond de la Sécurité sociale
+#' (PSS). Moyennes annuelles pondérées par le nombre de mois d'application.
 #'
-#' @format Un tibble avec 5 colonnes :
+#' @format Un tibble avec 6 colonnes :
 #' \describe{
 #'   \item{annee}{Année}
+#'   \item{statut}{"noncadre" ou "cadre"}
 #'   \item{cotisation}{Nom de la cotisation (maladie, vieillesse, veuvage,
-#'     chomage, arrco, asf, agff, agirc_arrco, ceg, cet)}
+#'     chomage, asf, arrco, agff, agirc, apec, cet_cadres, agirc_arrco, ceg, cet)}
 #'   \item{borne_inf}{Début de la tranche, en PSS}
 #'   \item{borne_sup}{Fin de la tranche, en PSS (Inf pour tout le salaire)}
 #'   \item{taux}{Taux salarial}
 #' }
 #'
 #' @details La CET (depuis 2019) n'est due que si le salaire dépasse 1 PSS ;
-#'   elle s'applique alors au salaire jusqu'à 8 PSS.
+#'   elle s'applique alors au salaire jusqu'à 8 PSS. Pour l'AGIRC, la série
+#'   retenue est celle des entreprises affiliées avant 1981 (taux plus faibles
+#'   jusqu'en 1995). Pour l'AGFF des cadres en 2016-2018, les colonnes 0-4 et
+#'   4-8 de l'IPP sont lues comme 0-1 et 1-8 PSS.
 #'
-#' @source Barèmes IPP, Institut des politiques publiques. Pour l'ARRCO, taux
-#'   effectifs (taux d'appel inclus) des salariés non-cadres.
+#' @source Barèmes IPP, Institut des politiques publiques. Taux effectifs
+#'   (taux d'appel inclus) pour la retraite complémentaire.
 "cotisations_salariales"
 
 #' SMIC de référence (1979-2025)

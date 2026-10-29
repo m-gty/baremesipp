@@ -1,6 +1,6 @@
-# Cotisations salariales d'un salarié non-cadre du secteur privé (Barèmes IPP),
-# en moyennes annuelles pondérées par les mois, par tranche de salaire exprimée
-# en multiples du plafond de la Sécurité sociale (PSS)
+# Cotisations salariales des salariés du secteur privé (Barèmes IPP), non-cadres
+# et cadres, en moyennes annuelles pondérées par les mois, par tranche de
+# salaire exprimée en multiples du plafond de la Sécurité sociale (PSS)
 library(readr)
 library(dplyr)
 library(tidyr)
@@ -32,9 +32,10 @@ en_annuel <- function(tab, vars, annees, avant = 0) {
 annees <- 1979:2025
 
 # Lit une table et renvoie ses taux salariaux au format long.
-# `colonnes` associe chaque colonne IPP à une tranche "borneinf_bornesup" (en PSS).
-lire_cotisation <- function(fichier, colonnes, nom) {
-  tab <- lire(fichier)
+# `colonnes` associe chaque colonne (IPP ou préparée) à une tranche "inf_sup" en PSS.
+# `preparer` permet de corriger ou combiner des colonnes avant la lecture.
+lire_cotisation <- function(fichier, colonnes, nom, preparer = identity) {
+  tab <- preparer(lire(fichier))
   tab <- tab[, c("debut", names(colonnes))]
   names(tab) <- c("debut", unname(colonnes))
   for (v in unname(colonnes)) tab[[v]] <- coalesce(parse_taux(tab[[v]]), 0)
@@ -43,7 +44,8 @@ lire_cotisation <- function(fichier, colonnes, nom) {
     mutate(cotisation = nom)
 }
 
-cotisations_salariales <- bind_rows(
+# Cotisations communes aux non-cadres et aux cadres
+communes <- bind_rows(
   lire_cotisation("data-raw/maladie_ipp.csv",
                   c("salarie.maladie.0-" = "0_Inf", "salarie.maladie.0-1" = "0_1",
                     "salarie.maladie.1-" = "1_Inf"), "maladie"),
@@ -56,15 +58,8 @@ cotisations_salariales <- bind_rows(
   lire_cotisation("data-raw/chomage_ipp.csv",
                   c("salarie.chomage.0-" = "0_Inf", "salarie.chomage.0-1" = "0_1",
                     "salarie.chomage.1-4" = "1_4"), "chomage"),
-  lire_cotisation("data-raw/arrco_ipp.csv",
-                  c("taux_effectifs_salaries_employeurs.salarie.noncadre.arrco.0-1" = "0_1",
-                    "taux_effectifs_salaries_employeurs.salarie.noncadre.arrco.1-3" = "1_3"),
-                  "arrco"),
   lire_cotisation("data-raw/asf_ipp.csv",
                   c("salarie.asf.0-1" = "0_1", "salarie.asf.1-4" = "1_4"), "asf"),
-  lire_cotisation("data-raw/agff_ipp.csv",
-                  c("salarie.noncadre.agff.0-1" = "0_1",
-                    "salarie.noncadre.agff.1-3" = "1_3"), "agff"),
   lire_cotisation("data-raw/agirc_arrco_ipp.csv",
                   c("salarie.agirc_arrco.0-1" = "0_1",
                     "salarie.agirc_arrco.1-8" = "1_8"), "agirc_arrco"),
@@ -72,11 +67,54 @@ cotisations_salariales <- bind_rows(
                   c("salarie.ceg.0-1" = "0_1", "salarie.ceg.1-8" = "1_8"), "ceg"),
   lire_cotisation("data-raw/cet_ipp.csv",
                   c("salarie.cet2019.0-8" = "0_8"), "cet")
+)
+
+# Cotisations propres aux non-cadres (retraite complémentaire avant 2019)
+noncadres <- bind_rows(
+  lire_cotisation("data-raw/arrco_ipp.csv",
+                  c("taux_effectifs_salaries_employeurs.salarie.noncadre.arrco.0-1" = "0_1",
+                    "taux_effectifs_salaries_employeurs.salarie.noncadre.arrco.1-3" = "1_3"),
+                  "arrco"),
+  lire_cotisation("data-raw/agff_ipp.csv",
+                  c("salarie.noncadre.agff.0-1" = "0_1",
+                    "salarie.noncadre.agff.1-3" = "1_3"), "agff")
+)
+
+# AGFF des cadres : en 2016-2018, l'IPP range les taux dans des colonnes 0-4 et
+# 4-8 ; d'après sa note (extension à la tranche C), on les lit comme 0-1 et 1-8.
+preparer_agff_cadre <- function(t) {
+  t |> mutate(agff_cadre_0_1 = coalesce(`salarie.cadre.agff.0-1`, `salarie.cadre.agff.0-4`),
+              agff_cadre_1_8 = `salarie.cadre.agff.4-8`)
+}
+
+# Cotisations propres aux cadres (retraite complémentaire avant 2019, APEC)
+# AGIRC : série des entreprises affiliées avant 1981, complète sur toute la période.
+cadres <- bind_rows(
+  lire_cotisation("data-raw/arrco_ipp.csv",
+                  c("taux_effectifs_salaries_employeurs.salarie.cadre.arrco.0-1" = "0_1"),
+                  "arrco"),
+  lire_cotisation("data-raw/agirc_ipp.csv",
+                  c("taux_effectifs_salaries_employeurs.avant81.salarie.agirc.1-4" = "1_4",
+                    "taux_effectifs_salaries_employeurs.avant81.salarie.agirc.4-8" = "4_8"),
+                  "agirc"),
+  lire_cotisation("data-raw/agff_ipp.csv",
+                  c("agff_cadre_0_1" = "0_1", "salarie.cadre.agff.1-4" = "1_4",
+                    "agff_cadre_1_8" = "1_8"), "agff", preparer = preparer_agff_cadre),
+  lire_cotisation("data-raw/apec_ipp.csv",
+                  c("salarie.apec.0-1" = "0_1", "salarie.apec.1-4" = "1_4"), "apec"),
+  lire_cotisation("data-raw/cet_ancienne_ipp.csv",
+                  c("salarie.cet.0-8" = "0_8"), "cet_cadres")
+)
+
+cotisations_salariales <- bind_rows(
+  mutate(communes, statut = "noncadre"), mutate(noncadres, statut = "noncadre"),
+  mutate(communes, statut = "cadre"),    mutate(cadres, statut = "cadre")
 ) |>
   separate(tranche, into = c("borne_inf", "borne_sup"), sep = "_") |>
   mutate(borne_inf = as.numeric(borne_inf), borne_sup = as.numeric(borne_sup)) |>
   filter(taux > 0) |>
-  select(annee, cotisation, borne_inf, borne_sup, taux) |>
-  arrange(annee, cotisation, borne_inf)
+  select(annee, statut, cotisation, borne_inf, borne_sup, taux) |>
+  arrange(annee, statut, cotisation, borne_inf)
 
 usethis::use_data(cotisations_salariales, overwrite = TRUE)
+

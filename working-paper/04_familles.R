@@ -6,10 +6,10 @@ library(tidyr)
 library(ggplot2)
 
 couples <- tibble::tribble(
-  ~cas, ~libelle,                           ~k1, ~k2,
-  "D",  "Couple 1,5 + 1 SMIC",              1.5, 1,
-  "E",  "Couple 3 + 2 SMIC",                3,   2,
-  "F",  "Couple 5 + 3 SMIC",                5,   3
+  ~cas, ~libelle,                           ~k1, ~k2, ~cadre1, ~cadre2,
+  "D",  "Couple 1,5 + 1 SMIC",              1.5, 1,   FALSE,   FALSE,
+  "E",  "Couple 3 + 2 SMIC",                3,   2,   TRUE,    FALSE,
+  "F",  "Couple 5 + 3 SMIC",                5,   3,   TRUE,    TRUE
 )
 
 familles <- do.call(rbind, lapply(1981:2025, function(a) {
@@ -19,7 +19,8 @@ familles <- do.call(rbind, lapply(1981:2025, function(a) {
     impot <- function(parts, plafonnement) {
       prelevements_salaire(ct$k1 * s, annee = a, brut2 = ct$k2 * s, parts = parts,
                            couple = TRUE, decote = TRUE,
-                           plafonnement = plafonnement)$impot
+                           plafonnement = plafonnement,
+                           cadre = ct$cadre1, cadre2 = ct$cadre2)$impot
     }
     data.frame(annee = a, cas = ct$cas, libelle = ct$libelle,
                sans_enfant        = en_euros_constants(impot(2, TRUE), a),

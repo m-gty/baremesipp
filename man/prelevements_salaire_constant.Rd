@@ -12,7 +12,9 @@ prelevements_salaire_constant(
   parts = 1,
   couple = FALSE,
   decote = FALSE,
-  plafonnement = FALSE
+  plafonnement = FALSE,
+  cadre = FALSE,
+  cadre2 = FALSE
 )
 }
 \arguments{
@@ -34,15 +36,18 @@ le seuil de la décote.}
 
 \item{plafonnement}{\code{TRUE} pour plafonner l'avantage procuré par les
 demi-parts supplémentaires (revenus 1981 et après).}
+
+\item{cadre, cadre2}{\code{TRUE} si le premier (ou le second) salarié est cadre.}
 }
 \value{
 Le même data frame que \code{\link[=prelevements_salaire]{prelevements_salaire()}}, en euros de
 \code{annee_ref}.
 }
 \description{
-Comme \code{\link[=prelevements_salaire]{prelevements_salaire()}}, mais le salaire brut est exprimé en euros
-de \code{annee_ref} : il est converti dans la monnaie et le niveau de prix de
-\code{annee}, puis tous les montants sont reconvertis en euros de \code{annee_ref}.
+Comme \code{\link[=prelevements_salaire]{prelevements_salaire()}}, mais les salaires bruts sont exprimés en
+euros de \code{annee_ref} : ils sont convertis dans la monnaie et le niveau de
+prix de \code{annee}, puis tous les montants sont reconvertis en euros de
+\code{annee_ref}.
 }
 \examples{
 prelevements_salaire_constant(40000, annee = 1990)
