@@ -2,11 +2,12 @@
 
 *Historical French income tax schedules in R, from the IPP's Barèmes.*
 
-`baremesipp` donne accès en R au barème de l'impôt sur le revenu français depuis 1945, nettoyé à partir des [Barèmes IPP](https://www.ipp.eu/baremes-ipp/) de l'Institut des politiques publiques. Il permet de :
+`baremesipp` donne accès en R aux paramètres de l'impôt sur le revenu français depuis 1945, nettoyés à partir des [Barèmes IPP](https://www.ipp.eu/baremes-ipp/) de l'Institut des politiques publiques. Il permet de :
 
 - calculer l'impôt d'un foyer sous le barème de n'importe quelle année, avec le quotient familial et la décote ;
+- partir du **salaire déclaré**, en appliquant les abattements de chaque époque (10 % pour frais professionnels, 20 % jusqu'en 2005) ;
 - convertir les montants en **euros constants**, en gérant l'inflation et les changements de monnaie (anciens francs, francs, euros) ;
-- **comparer les barèmes dans le temps** : combien paierait aujourd'hui un foyer sous le barème de 1985 ?
+- **comparer les règles fiscales dans le temps** : combien paierait aujourd'hui un salarié sous le barème de 1985 ?
 
 ## Installation
 
@@ -40,13 +41,23 @@ Pour un couple soumis à imposition commune (2 parts) :
 calc_ir(40000, parts = 2, annee = 2025, couple = TRUE, decote = TRUE)
 ```
 
-### Comparer les barèmes en euros constants
+### Partir du salaire
 
-Combien paierait un célibataire à 30 000 € (euros de 2025) sous le barème de 2010 ?
+Revenu imposable correspondant à un salaire déclaré de 22 223 € en 2024 (déduction de 10 %) :
 
 ```r
-calc_ir_constant(30000, annee = 2010)
+revenu_imposable_salaire(22223, annee = 2024)
+#> [1] 20000.7
 ```
+
+Impôt d'un couple de deux salariés : la déduction s'applique séparément à chacun.
+
+```r
+calc_ir_salaire(30000, salaire2 = 25000, parts = 2, annee = 2024,
+                couple = TRUE, decote = TRUE)
+```
+
+### Comparer les règles dans le temps, en euros constants
 
 Convertir un montant historique en euros de 2025 :
 
@@ -54,18 +65,31 @@ Convertir un montant historique en euros de 2025 :
 en_euros_constants(100000, annee = 1985)   # 100 000 francs de 1985
 ```
 
-Impôt d'un célibataire, en euros de 2025, sous différents barèmes :
+Impôt d'un célibataire salarié (33 333 € de salaire déclaré, en euros de 2025), sous les règles de différentes années :
 
 ```r
-annees <- c(1960, 1970, 1980, 1990, 2000, 2010, 2025)
-sapply(annees, function(a) round(calc_ir_constant(30000, annee = a)))
+annees <- c(1980, 1990, 2000, 2005, 2006, 2010, 2025)
+sapply(annees, function(a) round(calc_ir_constant(33333, annee = a, salaire = TRUE)))
+#> [1] 4818 4653 3360 2979 2493 2490 2104
 ```
+
+À salaire constant, l'impôt sur le revenu d'un salarié moyen a été divisé par plus de deux entre 1980 et 2025.
 
 ## Précautions d'interprétation
 
-`calc_ir` calcule l'impôt issu du barème, avec le quotient familial et, sur option, la décote (revenus 2001 et après). Il ne prend pas encore en compte le plafonnement des effets du quotient familial, ni les réductions et crédits d'impôt.
+`calc_ir` calcule l'impôt issu du barème, avec le quotient familial et, sur option, la décote. Il ne prend pas encore en compte le plafonnement des effets du quotient familial, ni les réductions et crédits d'impôt.
 
-**Les comparaisons dans le temps se font à revenu net imposable égal.** La définition de ce revenu a changé : jusqu'en 2005, les salaires bénéficiaient d'un abattement de 20 %, intégré au barème en 2006. À revenu imposable égal, un foyer d'avant 2006 correspond donc à un salaire plus élevé, et l'impôt des années antérieures est surestimé par rapport à un raisonnement à salaire égal. Les taxes complémentaires d'avant 1970 ne sont pas incluses. Les comparaisons lointaines sont donc indicatives.
+**Préférez les comparaisons à salaire égal** (`salaire = TRUE`). La définition du revenu imposable a changé dans le temps : jusqu'en 2005, les salaires bénéficiaient d'un abattement de 20 %, intégré au barème en 2006. Comparer les années à revenu imposable égal surestime donc l'impôt des années antérieures à 2006.
+
+Périodes couvertes :
+
+| Élément | Revenus couverts |
+|---|---|
+| Barème | 1945-2025 |
+| Abattements sur salaires | 1979-2025 |
+| Décote | 2001-2025 |
+
+Les taxes complémentaires d'avant 1970 ne sont pas incluses. Le minimum majoré de déduction pour les chômeurs de longue durée (1997-2017) n'est pas appliqué.
 
 Les montants sont exprimés dans la monnaie de l'année : anciens francs jusqu'en 1959, francs jusqu'en 2000, euros ensuite.
 
@@ -75,11 +99,18 @@ Les montants sont exprimés dans la monnaie de l'année : anciens francs jusqu'e
 |---|---|---|
 | `bareme_ir` | Seuils et taux du barème, revenus 1945-2025 | Barèmes IPP ; lois de finances pour 2025 et 2026 |
 | `decote` | Paramètres de la décote, revenus 1950-2025 | Barèmes IPP ; loi de finances pour 2026 |
+| `abattements_salaires` | Déduction de 10 % et abattement de 20 %, revenus 1942-2025 | Barèmes IPP ; article 83 du CGI |
 | `ipc` | Indice des prix à la consommation, 1901-2025 (base 2025) | INSEE, via DBnomics |
 
-Quand un barème n'a pas changé une année donnée, le dernier barème en vigueur s'applique.
+Quand un paramètre n'a pas changé une année donnée, la dernière valeur en vigueur s'applique.
 
-Les **Barèmes IPP** sont produits par l'[Institut des politiques publiques](https://www.ipp.eu/) et diffusés sous [Licence Ouverte / Open Licence](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) ([fiche data.gouv.fr](https://www.data.gouv.fr/datasets/baremes-ipp-systeme-social-et-fiscal-francais)), téléchargés en octobre 2026. Les barèmes des revenus 2024 et 2025, absents des Barèmes IPP, ont été ajoutés à partir de l'article 197 du Code général des impôts : loi n° 2025-127 du 14 février 2025 (art. 2) et loi n° 2026-103 du 19 février 2026 (art. 4).
+Les **Barèmes IPP** sont produits par l'[Institut des politiques publiques](https://www.ipp.eu/) et diffusés sous [Licence Ouverte / Open Licence](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) ([fiche data.gouv.fr](https://www.data.gouv.fr/datasets/baremes-ipp-systeme-social-et-fiscal-francais)), téléchargés en octobre 2026.
+
+Les paramètres absents des Barèmes IPP ont été ajoutés à partir du Code général des impôts :
+
+- barème des revenus 2024 : loi n° 2025-127 du 14 février 2025, art. 2 (article 197 du CGI) ;
+- barème et décote des revenus 2025 : loi n° 2026-103 du 19 février 2026, art. 4 (article 197 du CGI) ;
+- déduction pour frais professionnels des revenus 2025 (minimum 509 €, plafond 14 555 €) : article 83, 3° du CGI.
 
 L'**indice des prix** est la série INSEE « Coefficient de transformation de l'euro ou du franc d'une année en euro ou en franc d'une autre année - Base 2025 ». Ses valeurs anciennes sont arrondies à deux décimales, soit une imprécision d'au plus 0,5 % dès 1945.
 
@@ -89,10 +120,11 @@ Si vous utilisez ces données, merci de citer l'IPP et l'INSEE. Les scripts de n
 
 - [x] Barème de l'impôt sur le revenu, 1945-2025
 - [x] Décote (revenus 2001-2025)
-- [x] Conversion en euros constants et comparaison des barèmes
-- [ ] Comparaison à salaire égal (abattements de 10 % et de 20 %)
+- [x] Conversion en euros constants
+- [x] Comparaison à salaire égal (abattements de 10 % et de 20 %, revenus 1979 et après)
 - [ ] Décote avant 2001
 - [ ] Plafonnement des effets du quotient familial
+- [ ] Abattements sur salaires avant 1979
 - [ ] Autres barèmes IPP : CSG, cotisations sociales, prestations
 
 Les contributions sont bienvenues : ouvrez une *issue* ou une *pull request*.
