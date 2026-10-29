@@ -179,3 +179,18 @@
 #'
 #' @source Barèmes IPP, Institut des politiques publiques.
 "ppe"
+
+#' Paramètres mensuels du RSA activité et de la prime d'activité (2009-2025)
+#'
+#' Une ligne par mois : montant forfaitaire et taux de cumul du RSA (activité
+#' de juin 2009 à décembre 2015), paramètres de la prime d'activité (depuis
+#' janvier 2016), dont la bonification individuelle, et SMIC horaire brut.
+#' Les paramètres valent 0 hors des périodes d'existence des prestations.
+#'
+#' @format Un data frame avec 11 colonnes : `annee`, `mois`, `rsa_mf`,
+#'   `rsa_taux`, `pa_mf`, `pa_taux`, `pa_bonif_seuil` et `pa_bonif_max` (en
+#'   heures de SMIC), `pa_bonif_taux` (part du montant forfaitaire), `pa_min`,
+#'   `smic_horaire`.
+#'
+#' @source Barèmes IPP, Institut des politiques publiques.
+"prestations_activite"

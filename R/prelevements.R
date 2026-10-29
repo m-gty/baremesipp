@@ -39,8 +39,8 @@ montant_csg_crds <- function(brut, annee) {
 #'
 #' Part du salaire brut annuel et calcule, pour des salariés du secteur
 #' privé, les cotisations salariales, la CSG, la CRDS, le salaire net
-#' imposable, puis l'impôt sur le revenu du foyer et, sur option, la prime
-#' pour l'emploi.
+#' imposable, puis l'impôt sur le revenu du foyer et, sur option, les aides
+#' aux bas salaires.
 #'
 #' @inheritParams calc_ir
 #' @param brut Salaire brut annuel du premier salarié, dans la monnaie de
@@ -50,11 +50,16 @@ montant_csg_crds <- function(brut, annee) {
 #' @param cadre,cadre2 `TRUE` si le premier (ou le second) salarié est cadre.
 #' @param ppe `TRUE` pour déduire la prime pour l'emploi (revenus 2000-2015).
 #' @param personnes_charge Nombre de personnes à charge (majoration de la PPE).
+#' @param aides `TRUE` pour déduire toutes les aides aux bas salaires : prime
+#'   pour l'emploi, RSA activité (2009-2015, imputé sur la prime pour
+#'   l'emploi) et prime d'activité (depuis 2016). RSA activité et prime
+#'   d'activité ne sont implémentés que pour une personne seule sans enfant,
+#'   locataire sans aide au logement.
 #'
 #' @return Un data frame avec, pour chaque salaire : `brut` (total du foyer),
 #'   `cotisations`, `csg`, `crds`, `net_imposable`, `impot`, `ppe`,
-#'   `net_apres_impot` et `taux_prelevements` (part du brut prélevée, nette de
-#'   la prime pour l'emploi).
+#'   `rsa_activite`, `prime_activite`, `net_apres_impot` et
+#'   `taux_prelevements` (part du brut prélevée, nette des aides).
 #'
 #' @details Cotisations du régime général et de l'assurance chômage, et
 #'   retraite complémentaire : ARRCO, ASF, AGFF pour les non-cadres ; ARRCO
@@ -70,13 +75,19 @@ montant_csg_crds <- function(brut, annee) {
 #' @examples
 #' prelevements_salaire(30000, annee = 2025)
 #' prelevements_salaire(80000, annee = 2010, cadre = TRUE)
-#' prelevements_salaire(15000, annee = 2007, ppe = TRUE)
+#' prelevements_salaire(21622, annee = 2025, decote = TRUE, aides = TRUE)
 #'
 #' @export
 prelevements_salaire <- function(brut, annee, brut2 = 0, parts = 1, couple = FALSE,
                                  decote = FALSE, plafonnement = FALSE,
                                  cadre = FALSE, cadre2 = FALSE,
-                                 ppe = FALSE, personnes_charge = 0) {
+                                 ppe = FALSE, personnes_charge = 0, aides = FALSE) {
+  if (aides && (couple || parts != 1 || any(brut2 > 0))) {
+    stop("Le RSA activit\u00e9 et la prime d'activit\u00e9 ne sont impl\u00e9ment\u00e9s ",
+         "que pour une personne seule sans enfant.")
+  }
+  if (aides) ppe <- TRUE
+
   cot1 <- montant_cotisations(brut, annee, cadre)
   cot2 <- montant_cotisations(brut2, annee, cadre2)
   cc1  <- montant_csg_crds(brut, annee)
@@ -98,14 +109,26 @@ prelevements_salaire <- function(brut, annee, brut2 = 0, parts = 1, couple = FAL
                             personnes_charge = personnes_charge)
   }
 
+  # RSA activité (imputé sur la prime pour l'emploi) et prime d'activité
+  rsa_act <- 0 * brut
+  prime_act <- 0 * brut
+  if (aides) {
+    net_paye <- brut - cot1 - cc1$csg - cc1$crds
+    rsa_act <- calc_rsa_activite(net_paye, annee)
+    montant_ppe <- pmax(0, montant_ppe - rsa_act)
+    prime_act <- calc_prime_activite(net_paye, annee)
+  }
+
   brut_total <- brut + brut2
   cotisations <- cot1 + cot2
   csg  <- cc1$csg + cc2$csg
   crds <- cc1$crds + cc2$crds
-  net_apres_impot <- brut_total - cotisations - csg - crds - impot + montant_ppe
+  net_apres_impot <- brut_total - cotisations - csg - crds - impot +
+    montant_ppe + rsa_act + prime_act
 
   data.frame(brut = brut_total, cotisations = cotisations, csg = csg, crds = crds,
              net_imposable = net_imp1 + net_imp2, impot = impot, ppe = montant_ppe,
+             rsa_activite = rsa_act, prime_activite = prime_act,
              net_apres_impot = net_apres_impot,
              taux_prelevements = (brut_total - net_apres_impot) / brut_total)
 }
@@ -133,15 +156,17 @@ prelevements_salaire_constant <- function(brut, annee, annee_ref = 2025, brut2 =
                                           parts = 1, couple = FALSE, decote = FALSE,
                                           plafonnement = FALSE,
                                           cadre = FALSE, cadre2 = FALSE,
-                                          ppe = FALSE, personnes_charge = 0) {
+                                          ppe = FALSE, personnes_charge = 0,
+                                          aides = FALSE) {
   f <- facteur_euros_constants(annee, annee_ref)
   res <- prelevements_salaire(brut / f, annee = annee, brut2 = brut2 / f, parts = parts,
                               couple = couple, decote = decote,
                               plafonnement = plafonnement,
                               cadre = cadre, cadre2 = cadre2,
-                              ppe = ppe, personnes_charge = personnes_charge)
+                              ppe = ppe, personnes_charge = personnes_charge,
+                              aides = aides)
   montants <- c("brut", "cotisations", "csg", "crds", "net_imposable", "impot", "ppe",
-                "net_apres_impot")
+                "rsa_activite", "prime_activite", "net_apres_impot")
   res[montants] <- res[montants] * f
   res
 }

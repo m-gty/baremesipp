@@ -16,7 +16,8 @@ prelevements_salaire_constant(
   cadre = FALSE,
   cadre2 = FALSE,
   ppe = FALSE,
-  personnes_charge = 0
+  personnes_charge = 0,
+  aides = FALSE
 )
 }
 \arguments{
@@ -44,6 +45,12 @@ demi-parts supplémentaires (revenus 1981 et après).}
 \item{ppe}{\code{TRUE} pour déduire la prime pour l'emploi (revenus 2000-2015).}
 
 \item{personnes_charge}{Nombre de personnes à charge (majoration de la PPE).}
+
+\item{aides}{\code{TRUE} pour déduire toutes les aides aux bas salaires : prime
+pour l'emploi, RSA activité (2009-2015, imputé sur la prime pour
+l'emploi) et prime d'activité (depuis 2016). RSA activité et prime
+d'activité ne sont implémentés que pour une personne seule sans enfant,
+locataire sans aide au logement.}
 }
 \value{
 Le même data frame que \code{\link[=prelevements_salaire]{prelevements_salaire()}}, en euros de

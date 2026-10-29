@@ -18,7 +18,8 @@ prelevements_salaire(
   cadre = FALSE,
   cadre2 = FALSE,
   ppe = FALSE,
-  personnes_charge = 0
+  personnes_charge = 0,
+  aides = FALSE
 )
 }
 \arguments{
@@ -45,18 +46,24 @@ demi-parts supplémentaires (revenus 1981 et après).}
 \item{ppe}{\code{TRUE} pour déduire la prime pour l'emploi (revenus 2000-2015).}
 
 \item{personnes_charge}{Nombre de personnes à charge (majoration de la PPE).}
+
+\item{aides}{\code{TRUE} pour déduire toutes les aides aux bas salaires : prime
+pour l'emploi, RSA activité (2009-2015, imputé sur la prime pour
+l'emploi) et prime d'activité (depuis 2016). RSA activité et prime
+d'activité ne sont implémentés que pour une personne seule sans enfant,
+locataire sans aide au logement.}
 }
 \value{
 Un data frame avec, pour chaque salaire : \code{brut} (total du foyer),
 \code{cotisations}, \code{csg}, \code{crds}, \code{net_imposable}, \code{impot}, \code{ppe},
-\code{net_apres_impot} et \code{taux_prelevements} (part du brut prélevée, nette de
-la prime pour l'emploi).
+\code{rsa_activite}, \code{prime_activite}, \code{net_apres_impot} et
+\code{taux_prelevements} (part du brut prélevée, nette des aides).
 }
 \description{
 Part du salaire brut annuel et calcule, pour des salariés du secteur
 privé, les cotisations salariales, la CSG, la CRDS, le salaire net
-imposable, puis l'impôt sur le revenu du foyer et, sur option, la prime
-pour l'emploi.
+imposable, puis l'impôt sur le revenu du foyer et, sur option, les aides
+aux bas salaires.
 }
 \details{
 Cotisations du régime général et de l'assurance chômage, et
@@ -71,6 +78,6 @@ santé réintégrée au revenu imposable et les régimes spéciaux.
 \examples{
 prelevements_salaire(30000, annee = 2025)
 prelevements_salaire(80000, annee = 2010, cadre = TRUE)
-prelevements_salaire(15000, annee = 2007, ppe = TRUE)
+prelevements_salaire(21622, annee = 2025, decote = TRUE, aides = TRUE)
 
 }
