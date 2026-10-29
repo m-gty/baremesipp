@@ -1,3 +1,5 @@
+# baremesipp 0.2.0
+
 # baremesipp 0.1.0
 
 Première version publique.
