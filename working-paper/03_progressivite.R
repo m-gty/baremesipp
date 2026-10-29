@@ -43,7 +43,7 @@ taux |>
   pivot_wider(names_from = prelevement, values_from = ecart)
 
 # Variante : écart total avec le SMIC net des aides
-panel_aides <- readRDS("working-paper/panel_A_aides.rds")
+panel_aides <- readRDS("working-paper/panel_A_aides.rds") |> filter(cas == "A")
 ecart_aides <- panel |>
   filter(cas == "C") |>
   select(annee, taux_C = taux_prelevements) |>

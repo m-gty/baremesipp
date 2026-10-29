@@ -49,9 +49,8 @@ demi-parts supplémentaires (revenus 1981 et après).}
 
 \item{aides}{\code{TRUE} pour déduire toutes les aides aux bas salaires : prime
 pour l'emploi, RSA activité (2009-2015, imputé sur la prime pour
-l'emploi) et prime d'activité (depuis 2016). RSA activité et prime
-d'activité ne sont implémentés que pour une personne seule sans enfant,
-locataire sans aide au logement.}
+l'emploi) et prime d'activité (depuis 2016), pour un foyer locataire sans
+aide au logement. \code{personnes_charge} sert de nombre d'enfants.}
 }
 \value{
 Un data frame avec, pour chaque salaire : \code{brut} (total du foyer),

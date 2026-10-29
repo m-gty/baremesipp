@@ -1,6 +1,6 @@
 # Paramètres mensuels du RSA activité (juin 2009 - décembre 2015) et de la
-# prime d'activité (depuis janvier 2016), avec le SMIC horaire brut du mois.
-# Barèmes IPP.
+# prime d'activité (depuis janvier 2016), avec le SMIC horaire brut et la BMAF
+# du mois. Barèmes IPP.
 library(readr)
 library(dplyr)
 
@@ -39,6 +39,9 @@ pa <- pa |>
 smic_brut <- lire("data-raw/smic_ipp.csv") |>
   mutate(smic_horaire = parse_decimal(smic_b_horaire))
 
+bmaf <- lire("data-raw/bmaf_ipp.csv") |>
+  mutate(bmaf = parse_decimal(bmaf))
+
 prestations_activite <- data.frame(
   annee = as.integer(format(mois, "%Y")),
   mois  = as.integer(format(mois, "%m")),
@@ -50,7 +53,8 @@ prestations_activite <- data.frame(
   pa_bonif_max   = valeur_du_mois(pa, "pa_bonif_max"),
   pa_bonif_taux  = valeur_du_mois(pa, "pa_bonif_taux"),
   pa_min         = valeur_du_mois(pa, "pa_min"),
-  smic_horaire   = valeur_du_mois(smic_brut, "smic_horaire")
+  smic_horaire   = valeur_du_mois(smic_brut, "smic_horaire"),
+  bmaf           = valeur_du_mois(bmaf, "bmaf")
 ) |>
   # Pas de RSA activité hors juin 2009 - décembre 2015, pas de prime d'activité avant 2016
   mutate(across(c(rsa_mf, rsa_taux, pa_mf, pa_taux, pa_bonif_seuil, pa_bonif_max,

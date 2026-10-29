@@ -23,3 +23,13 @@ test_that("la prime d'activité suit la formule (mois sans bonification)", {
   expect_equal(attendu, p$pa_taux * 500)
   expect_lt(500, p$pa_bonif_seuil * p$smic_horaire)  # bien sous le seuil
 })
+
+test_that("les majorations selon la composition du foyer sont correctes", {
+  expect_equal(baremesipp:::coef_foyer(FALSE, 0), 1)
+  expect_equal(baremesipp:::coef_foyer(TRUE, 2), 2.1)     # couple, 2 enfants
+  expect_equal(baremesipp:::coef_foyer(FALSE, 3), 2.2)    # seul, 3 enfants
+})
+
+test_that("pas de prime d'activité pour un couple aisé avec enfants", {
+  expect_equal(calc_prime_activite(60000, 2025, net2 = 40000, couple = TRUE, enfants = 2), 0)
+})

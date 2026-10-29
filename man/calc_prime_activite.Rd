@@ -2,35 +2,42 @@
 % Please edit documentation in R/aides.R
 \name{calc_prime_activite}
 \alias{calc_prime_activite}
-\title{Calculer la prime d'activité d'une personne seule (depuis 2016)}
+\title{Calculer la prime d'activité d'un foyer (depuis 2016)}
 \source{
 Barèmes IPP, Institut des politiques publiques.
 }
 \usage{
-calc_prime_activite(net, annee)
+calc_prime_activite(net, annee, net2 = 0, couple = FALSE, enfants = 0)
 }
 \arguments{
-\item{net}{Salaire net annuel (après cotisations, CSG et CRDS), supposé
-réparti également sur les douze mois. Un ou plusieurs montants.}
+\item{net}{Salaire net annuel du premier membre du foyer (après
+cotisations, CSG et CRDS), supposé réparti également sur les douze mois.}
 
 \item{annee}{Année.}
+
+\item{net2}{Salaire net annuel du second membre. Par défaut 0.}
+
+\item{couple}{\code{TRUE} pour un couple.}
+
+\item{enfants}{Nombre d'enfants à charge.}
 }
 \value{
 La prime d'activité perçue sur l'année ; 0 avant 2016.
 }
 \description{
-Calcule, mois par mois, la prime d'activité d'une personne seule sans
-enfant, locataire sans aide au logement (pas de forfait logement), puis la
-somme sur l'année.
+Calcule, mois par mois, la prime d'activité d'un foyer locataire sans aide
+au logement (pas de forfait logement), puis la somme sur l'année.
 }
 \details{
-Par mois : prime = montant forfaitaire + 61 pour cent (62 avant
-août 2018) x salaire + bonification - max(salaire, montant forfaitaire),
-non versée sous le montant minimum. La bonification est nulle sous un
-seuil exprimé en heures de SMIC, croît en ligne droite jusqu'à un second
-seuil, puis reste à son maximum (un pourcentage du montant forfaitaire).
+Par mois : prime = montant forfaitaire du foyer + 61 pour cent
+(62 avant août 2018) x salaires + bonifications individuelles -
+max(salaires + allocations familiales, montant forfaitaire du foyer), non
+versée sous le montant minimum. Chaque salarié a sa bonification : nulle
+sous un seuil exprimé en heures de SMIC, croissante jusqu'à un second
+seuil, puis à son maximum (un pourcentage du montant forfaitaire de base).
 }
 \examples{
 calc_prime_activite(18000, annee = 2025)
+calc_prime_activite(22000, annee = 2025, net2 = 15000, couple = TRUE, enfants = 2)
 
 }

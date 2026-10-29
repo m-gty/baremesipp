@@ -5,10 +5,10 @@
 \alias{prestations_activite}
 \title{Paramètres mensuels du RSA activité et de la prime d'activité (2009-2025)}
 \format{
-Un data frame avec 11 colonnes : \code{annee}, \code{mois}, \code{rsa_mf},
+Un data frame avec 12 colonnes : \code{annee}, \code{mois}, \code{rsa_mf},
 \code{rsa_taux}, \code{pa_mf}, \code{pa_taux}, \code{pa_bonif_seuil} et \code{pa_bonif_max} (en
 heures de SMIC), \code{pa_bonif_taux} (part du montant forfaitaire), \code{pa_min},
-\code{smic_horaire}.
+\code{smic_horaire},\code{bmaf}.
 }
 \source{
 Barèmes IPP, Institut des politiques publiques.

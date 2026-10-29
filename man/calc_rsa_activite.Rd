@@ -2,31 +2,38 @@
 % Please edit documentation in R/aides.R
 \name{calc_rsa_activite}
 \alias{calc_rsa_activite}
-\title{Calculer le RSA activité d'une personne seule (2009-2015)}
+\title{Calculer le RSA activité d'un foyer (2009-2015)}
 \source{
 Barèmes IPP, Institut des politiques publiques.
 }
 \usage{
-calc_rsa_activite(net, annee)
+calc_rsa_activite(net, annee, net2 = 0, couple = FALSE, enfants = 0)
 }
 \arguments{
-\item{net}{Salaire net annuel (après cotisations, CSG et CRDS), supposé
-réparti également sur les douze mois. Un ou plusieurs montants.}
+\item{net}{Salaire net annuel du premier membre du foyer (après
+cotisations, CSG et CRDS), supposé réparti également sur les douze mois.}
 
 \item{annee}{Année.}
+
+\item{net2}{Salaire net annuel du second membre. Par défaut 0.}
+
+\item{couple}{\code{TRUE} pour un couple.}
+
+\item{enfants}{Nombre d'enfants à charge.}
 }
 \value{
 Le RSA activité perçu sur l'année ; 0 hors de juin 2009 - décembre 2015.
 }
 \description{
 Calcule, mois par mois, la part « activité » du revenu de solidarité
-active d'une personne seule sans enfant, locataire sans aide au logement
-(pas de forfait logement), puis la somme sur l'année.
+active d'un foyer locataire sans aide au logement (pas de forfait
+logement), puis la somme sur l'année.
 }
 \details{
-Par mois : RSA = montant forfaitaire + 62 pour cent x salaire -
-salaire ; la part activité est ce qui dépasse le RSA socle
-(montant forfaitaire - salaire, s'il est positif).
+Par mois : RSA = montant forfaitaire du foyer + 62 pour cent x
+salaires - salaires - allocations familiales ; la part activité est ce
+qui dépasse le RSA socle. Les allocations familiales sont comptées à
+taux plein, sans majoration pour âge.
 }
 \examples{
 calc_rsa_activite(12000, annee = 2012)

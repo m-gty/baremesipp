@@ -52,9 +52,8 @@ montant_csg_crds <- function(brut, annee) {
 #' @param personnes_charge Nombre de personnes à charge (majoration de la PPE).
 #' @param aides `TRUE` pour déduire toutes les aides aux bas salaires : prime
 #'   pour l'emploi, RSA activité (2009-2015, imputé sur la prime pour
-#'   l'emploi) et prime d'activité (depuis 2016). RSA activité et prime
-#'   d'activité ne sont implémentés que pour une personne seule sans enfant,
-#'   locataire sans aide au logement.
+#'   l'emploi) et prime d'activité (depuis 2016), pour un foyer locataire sans
+#'   aide au logement. `personnes_charge` sert de nombre d'enfants.
 #'
 #' @return Un data frame avec, pour chaque salaire : `brut` (total du foyer),
 #'   `cotisations`, `csg`, `crds`, `net_imposable`, `impot`, `ppe`,
@@ -82,10 +81,6 @@ prelevements_salaire <- function(brut, annee, brut2 = 0, parts = 1, couple = FAL
                                  decote = FALSE, plafonnement = FALSE,
                                  cadre = FALSE, cadre2 = FALSE,
                                  ppe = FALSE, personnes_charge = 0, aides = FALSE) {
-  if (aides && (couple || parts != 1 || any(brut2 > 0))) {
-    stop("Le RSA activit\u00e9 et la prime d'activit\u00e9 ne sont impl\u00e9ment\u00e9s ",
-         "que pour une personne seule sans enfant.")
-  }
   if (aides) ppe <- TRUE
 
   cot1 <- montant_cotisations(brut, annee, cadre)
@@ -113,10 +108,13 @@ prelevements_salaire <- function(brut, annee, brut2 = 0, parts = 1, couple = FAL
   rsa_act <- 0 * brut
   prime_act <- 0 * brut
   if (aides) {
-    net_paye <- brut - cot1 - cc1$csg - cc1$crds
-    rsa_act <- calc_rsa_activite(net_paye, annee)
+    net_paye1 <- brut  - cot1 - cc1$csg - cc1$crds
+    net_paye2 <- brut2 - cot2 - cc2$csg - cc2$crds
+    rsa_act <- calc_rsa_activite(net_paye1, annee, net2 = net_paye2,
+                                 couple = couple, enfants = personnes_charge)
     montant_ppe <- pmax(0, montant_ppe - rsa_act)
-    prime_act <- calc_prime_activite(net_paye, annee)
+    prime_act <- calc_prime_activite(net_paye1, annee, net2 = net_paye2,
+                                     couple = couple, enfants = personnes_charge)
   }
 
   brut_total <- brut + brut2
