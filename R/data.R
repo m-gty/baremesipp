@@ -140,3 +140,24 @@
 #' @source Barèmes IPP, Institut des politiques publiques. Pour l'ARRCO, taux
 #'   effectifs (taux d'appel inclus) des salariés non-cadres.
 "cotisations_salariales"
+
+#' SMIC de référence (1979-2025)
+#'
+#' SMIC horaire brut moyen de l'année et SMIC annuel brut de référence,
+#' calculé sur 151,67 heures par mois pour toutes les années.
+#'
+#' @format Un tibble avec 3 colonnes :
+#' \describe{
+#'   \item{annee}{Année}
+#'   \item{smic_horaire_moyen}{SMIC horaire brut, moyenne pondérée par les mois}
+#'   \item{smic_annuel}{SMIC horaire x 151,67 heures x 12 mois}
+#' }
+#'
+#' @details Convention « SMIC à 35 heures » appliquée à toutes les années, pour
+#'   neutraliser les changements de durée légale du travail (40, 39 puis 35
+#'   heures) et les garanties mensuelles de rémunération de 2000-2005. Avant
+#'   2002, un salarié au SMIC à temps plein gagnait environ 11 pour cent de plus.
+#'   Montants en francs jusqu'en 2000, en euros ensuite.
+#'
+#' @source Barèmes IPP, Institut des politiques publiques.
+"smic"
