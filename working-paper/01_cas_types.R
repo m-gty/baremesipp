@@ -1,4 +1,4 @@
-# Working paper : prélèvements sur les salaires, 1979-2025
+# Working paper : prélèvements sur les salaires, 1981-2025
 # 01 - Calcul du panel des cas types
 devtools::load_all()
 library(dplyr)
@@ -13,7 +13,7 @@ cas_types <- tibble::tribble(
   "E",  "Couple 3 + 2 SMIC, 2 enfants",        3,   2,   3,      TRUE
 )
 
-annees <- 1979:2025
+annees <- 1981:2025   # période où tous les paramètres sont disponibles
 montants <- c("brut", "cotisations", "csg", "crds", "net_imposable", "impot",
               "net_apres_impot")
 
@@ -23,8 +23,7 @@ panel <- do.call(rbind, lapply(annees, function(a) {
     ct <- cas_types[i, ]
     r <- prelevements_salaire(ct$k1 * s, annee = a, brut2 = ct$k2 * s,
                               parts = ct$parts, couple = ct$couple,
-                              decote = a >= 2001,          # décote disponible depuis 2001
-                              plafonnement = a >= 1981)    # plafonnement depuis 1981
+                              decote = TRUE, plafonnement = TRUE)
     r[montants] <- en_euros_constants(r[montants], a)      # en euros de 2025
     data.frame(annee = a, cas = ct$cas, libelle = ct$libelle, r)
   }))

@@ -4,19 +4,22 @@
 \alias{calc_decote}
 \title{Calculer la décote de l'impôt sur le revenu}
 \source{
-Barèmes IPP, Institut des politiques publiques ; article 197 du CGI.
+Barèmes IPP, Institut des politiques publiques ; article 197 du
+CGI (versions successives) ; BOI 5 B-9-01.
 }
 \usage{
-calc_decote(impot, annee, couple = FALSE)
+calc_decote(impot, annee, couple = FALSE, parts = 1)
 }
 \arguments{
 \item{impot}{Impôt brut issu du barème (un ou plusieurs montants).}
 
-\item{annee}{Année de perception des revenus (2001 ou après).}
+\item{annee}{Année de perception des revenus (1981 ou après).}
 
 \item{couple}{\code{TRUE} pour un couple soumis à imposition commune. Depuis les
-revenus 2014, les couples ont un seuil spécifique ; avant, le seuil est
-le même pour tous.}
+revenus 2014, les couples ont un seuil spécifique.}
+
+\item{parts}{Nombre de parts de quotient familial. Utilisé pour les revenus
+1981-1985, où la décote était réservée aux foyers à 1 ou 1,5 part.}
 }
 \value{
 Le montant de la décote, compris entre 0 et l'impôt.
@@ -26,10 +29,17 @@ Applique la décote en vigueur pour une année de revenus à un impôt brut :
 décote = seuil - taux x impôt, dans la limite du montant de l'impôt.
 }
 \details{
-Les règles antérieures aux revenus 2001 ne sont pas encore
+Revenus 1981-1985 : seuil - impôt, avec un seuil propre aux foyers
+à 1 part et à 1,5 part, et pas de décote au-delà. Revenus 1986-1999 :
+seuil - impôt pour tous. Le taux vaut ensuite 0,5 pour 2000-2013, 1 en
+2014, 0,75 pour 2015-2019 et 0,4525 depuis 2020. Avant les revenus 1993,
+la décote s'appliquait avant le plafonnement du quotient familial ; le
+package l'applique toujours après. Les règles d'avant 1981 ne sont pas
 implémentées.
 }
 \examples{
 calc_decote(935.33, annee = 2024)
+calc_decote(2000, annee = 1999)
+calc_decote(2000, annee = 1983, parts = 1)
 
 }

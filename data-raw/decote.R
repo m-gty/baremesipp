@@ -30,6 +30,17 @@ complement <- tibble(annee_revenus = 2025L, annee_imposition = 2026L,
                      taux = 0.4525, seuil_celib = 897, seuil_couple = 1483,
                      monnaie = "EUR")
 
+# Taux de 1981-2000, absents des Barèmes IPP.
+# Revenus 1981-1985 : décote = seuil - impôt, seulement à 1 ou 1,5 part
+#   (article 197 du CGI, version de 1983 : 2 600 F et 800 F pour 1981).
+# Revenus 1986-1999 : décote = seuil - impôt (taux 1), pour tous.
+# Revenus 2000 : décote = seuil - impôt / 2 (taux 0,5), plafond de 2 450 F.
+# Sources : article 197 du CGI (versions successives), BOI 5 B-9-01.
+decote <- decote |>
+  mutate(taux = case_when(annee_revenus >= 1981 & annee_revenus <= 1999 ~ 1,
+                          annee_revenus == 2000 ~ 0.5,
+                          TRUE ~ taux))
+
 decote <- decote |>
   select(annee_revenus, annee_imposition, taux, seuil, seuil_celib, seuil_couple,
          seuil_1_part, seuil_15_part, seuil_1_faible_nombre_part,

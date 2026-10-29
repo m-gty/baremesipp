@@ -29,7 +29,7 @@ calc_ir_constant(
 déterminer les parts de base (2 au lieu de 1) pour le plafonnement, et
 le seuil de la décote.}
 
-\item{decote}{\code{TRUE} pour appliquer la décote (revenus 2001 et après).}
+\item{decote}{\code{TRUE} pour appliquer la décote (revenus 1981 et après).}
 
 \item{plafonnement}{\code{TRUE} pour plafonner l'avantage procuré par les
 demi-parts supplémentaires (revenus 1981 et après).}

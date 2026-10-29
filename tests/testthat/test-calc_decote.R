@@ -15,6 +15,23 @@ test_that("la décote ne rend jamais l'impôt négatif", {
   expect_equal(calc_ir(12000, annee = 2024, decote = TRUE), 0)
 })
 
-test_that("la décote avant 2001 renvoie une erreur", {
-  expect_error(calc_ir(30000, annee = 1995, decote = TRUE))
+test_that("le régime 1986-1999 est correct (décote = seuil - impôt)", {
+  # 1999 : seuil 3 350 F ; impôt 2 000 F -> décote 1 350 -> impôt 650 F
+  expect_equal(calc_decote(2000, annee = 1999), 1350)
+})
+
+test_that("le régime de 2000 est correct (décote = seuil - impôt / 2)", {
+  # 2000 : seuil 2 450 F ; impôt 3 000 F -> décote 950 -> impôt 2 050 F
+  expect_equal(calc_decote(3000, annee = 2000), 950)
+})
+
+test_that("le régime 1981-1985 est correct (1 et 1,5 part seulement)", {
+  # 1983 : seuils de 3 700 F (1 part) et 1 400 F (1,5 part)
+  expect_equal(calc_decote(2000, annee = 1983, parts = 1), 1700)
+  expect_equal(calc_decote(1000, annee = 1983, parts = 1.5), 400)
+  expect_equal(calc_decote(1000, annee = 1983, parts = 2), 0)
+})
+
+test_that("la décote avant 1981 renvoie une erreur", {
+  expect_error(calc_ir(30000, annee = 1980, decote = TRUE))
 })

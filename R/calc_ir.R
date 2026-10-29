@@ -12,7 +12,7 @@
 #' @param couple `TRUE` pour un couple soumis à imposition commune. Sert à
 #'   déterminer les parts de base (2 au lieu de 1) pour le plafonnement, et
 #'   le seuil de la décote.
-#' @param decote `TRUE` pour appliquer la décote (revenus 2001 et après).
+#' @param decote `TRUE` pour appliquer la décote (revenus 1981 et après).
 #' @param plafonnement `TRUE` pour plafonner l'avantage procuré par les
 #'   demi-parts supplémentaires (revenus 1981 et après).
 #'
@@ -73,7 +73,7 @@ calc_ir <- function(revenu, parts = 1, annee, couple = FALSE, decote = FALSE,
   }
 
   # Décote (optionnelle), appliquée après le plafonnement
-  if (decote) impot <- impot - calc_decote(impot, annee, couple)
+  if (decote) impot <- impot - calc_decote(impot, annee, couple, parts)
 
   impot
 }
