@@ -95,3 +95,48 @@
 #' @source Barèmes IPP, Institut des politiques publiques ; revenus 2025 :
 #'   article 197 du CGI.
 "plafonnement_qf"
+
+#' CSG, CRDS et plafond de la Sécurité sociale (1979-2025)
+#'
+#' Paramètres annuels de la CSG et de la CRDS sur les revenus d'activité, et
+#' plafond annuel de la Sécurité sociale. Les valeurs sont des moyennes
+#' annuelles pondérées par le nombre de mois d'application.
+#'
+#' @format Un tibble avec 7 colonnes :
+#' \describe{
+#'   \item{annee}{Année}
+#'   \item{csg_taux}{Taux global de la CSG}
+#'   \item{csg_deductible}{Part déductible du revenu imposable}
+#'   \item{csg_abattement}{Abattement d'assiette pour frais professionnels}
+#'   \item{csg_abattement_plafonne}{1 si l'abattement est limité à 4 PSS}
+#'   \item{crds_taux}{Taux de la CRDS (même assiette que la CSG)}
+#'   \item{pss}{Plafond annuel de la Sécurité sociale (francs jusqu'en 2000)}
+#' }
+#'
+#' @source Barèmes IPP, Institut des politiques publiques. L'abattement de 5
+#'   pour cent de 1991-1997, absent de l'export CSV, est complété d'après
+#'   l'instruction n° 91-52-M9 du 17 avril 1991.
+"prelevements_sociaux"
+
+#' Cotisations salariales d'un non-cadre du secteur privé (1979-2025)
+#'
+#' Taux salariaux par cotisation et par tranche de salaire, exprimée en
+#' multiples du plafond de la Sécurité sociale (PSS). Moyennes annuelles
+#' pondérées par le nombre de mois d'application.
+#'
+#' @format Un tibble avec 5 colonnes :
+#' \describe{
+#'   \item{annee}{Année}
+#'   \item{cotisation}{Nom de la cotisation (maladie, vieillesse, veuvage,
+#'     chomage, arrco, asf, agff, agirc_arrco, ceg, cet)}
+#'   \item{borne_inf}{Début de la tranche, en PSS}
+#'   \item{borne_sup}{Fin de la tranche, en PSS (Inf pour tout le salaire)}
+#'   \item{taux}{Taux salarial}
+#' }
+#'
+#' @details La CET (depuis 2019) n'est due que si le salaire dépasse 1 PSS ;
+#'   elle s'applique alors au salaire jusqu'à 8 PSS.
+#'
+#' @source Barèmes IPP, Institut des politiques publiques. Pour l'ARRCO, taux
+#'   effectifs (taux d'appel inclus) des salariés non-cadres.
+"cotisations_salariales"
