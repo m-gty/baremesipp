@@ -12,8 +12,8 @@
 ## Installation
 
 ```r
-# install.packages("devtools")
-devtools::install_github("m-gty/baremesipp")
+# install.packages("pak")
+pak::pak("m-gty/baremesipp")
 ```
 
 ## Exemples
