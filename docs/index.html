@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulateur baremesipp</title>
+<meta name="description" content="Du salaire brut au salaire net : cotisations, CSG, CRDS, impôt sur le revenu et aides aux bas salaires, de 1979 à 2025. Calculs effectués par le package R baremesipp, exécuté dans le navigateur avec webR.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f6f4;
+  --surface: #ffffff;
+  --border: #e3e3df;
+  --grid: #ececea;
+  --text: #191919;
+  --text-2: #5f5f5a;
+  --accent: #257de0;
+  --accent-soft: #e5f0fc;
+  --s-net: #257de0;
+  --s-cot: #f47230;
+  --s-csg: #00b894;
+  --s-ir: #f2a600;
+  --s-aides: #008a17;
+  --s-total: #8a8a85;
+  --error-bg: #fdecec;
+  --error: #a32020;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121212;
+    --surface: #1c1c1c;
+    --border: #303030;
+    --grid: #2a2a2a;
+    --text: #efefef;
+    --text-2: #a3a3a3;
+    --accent: #338ced;
+    --accent-soft: #16263a;
+    --s-net: #338ced;
+    --s-cot: #e76624;
+    --s-csg: #00a888;
+    --s-ir: #d28e05;
+    --s-aides: #0aac23;
+    --s-total: #7a7a7a;
+    --error-bg: #3a1a1a;
+    --error: #ff9b9b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121212;
+  --surface: #1c1c1c;
+  --border: #303030;
+  --grid: #2a2a2a;
+  --text: #efefef;
+  --text-2: #a3a3a3;
+  --accent: #338ced;
+  --accent-soft: #16263a;
+  --s-net: #338ced;
+  --s-cot: #e76624;
+  --s-csg: #00a888;
+  --s-ir: #d28e05;
+  --s-aides: #0aac23;
+  --s-total: #7a7a7a;
+  --error-bg: #3a1a1a;
+  --error: #ff9b9b;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 32px 16px 64px; }
+
+header { margin-bottom: 28px; }
+header .kicker { font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: .02em; }
+header h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; margin: 6px 0 10px; letter-spacing: -0.02em; }
+header p { color: var(--text-2); max-width: 760px; margin: 0; }
+
+.layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.card h2 { font-size: 16px; margin: 0 0 4px; }
+.card .sub { color: var(--text-2); font-size: 13px; margin: 0 0 14px; }
+
+/* Formulaire */
+form.card { position: sticky; top: 16px; }
+@media (max-width: 900px) { form.card { position: static; } }
+.field { margin-bottom: 16px; }
+.field > label, .field > .label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.hint { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+input[type="number"], select {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+}
+input[type="number"]:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 10px 0 0; }
+.money { position: relative; }
+.money input { padding-right: 40px; font-size: 18px; font-weight: 600; }
+.money span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-2); font-size: 14px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { text-align: center; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-2); }
+.seg input:checked + label { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin-bottom: 8px; cursor: pointer; }
+.check input { margin-top: 3px; accent-color: var(--accent); }
+.check small { display: block; color: var(--text-2); font-size: 12px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+fieldset { border: 0; padding: 0; margin: 0; }
+.conjoint { border-left: 2px solid var(--border); padding-left: 12px; margin-bottom: 16px; }
+.conjoint[hidden] { display: none; }
+
+/* Résultats */
+.results { display: grid; gap: 20px; min-width: 0; }
+.status {
+  display: flex; gap: 12px; align-items: center;
+  padding: 14px 16px; border-radius: 10px;
+  background: var(--accent-soft); color: var(--text); font-size: 14px;
+}
+.status.error { background: var(--error-bg); color: var(--error); }
+.status[hidden] { display: none; }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: spin 0.8s linear infinite; flex: none; }
+.status.error .spinner { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; min-width: 0; }
+.kpi .k { font-size: 13px; color: var(--text-2); }
+.kpi .v { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; letter-spacing: -0.01em; margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi .d { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+.kpi.hero { background: var(--accent-soft); border-color: transparent; }
+
+.chart-box { position: relative; height: 320px; }
+.chart-box.tall { height: 360px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--text-2); margin: 0 0 10px; padding: 0; list-style: none; }
+.legend li { display: flex; align-items: center; gap: 6px; }
+.legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+.legend .ln { width: 16px; height: 0; border-top: 2px solid; }
+
+.tabs { display: flex; gap: 4px; margin: 0 0 12px; }
+.tabs button {
+  font: inherit; font-size: 13px; border: 1px solid var(--border); background: transparent; color: var(--text-2);
+  padding: 4px 10px; border-radius: 999px; cursor: pointer;
+}
+.tabs button[aria-pressed="true"] { background: var(--text); color: var(--surface); border-color: var(--text); }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--grid); }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12px; color: var(--text-2); font-weight: 600; }
+tr.total td { font-weight: 700; border-bottom: 0; border-top: 1px solid var(--border); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; }
+
+.notes { font-size: 13px; color: var(--text-2); }
+.notes ul { padding-left: 18px; margin: 8px 0 0; }
+.notes li { margin-bottom: 4px; }
+footer { margin-top: 32px; font-size: 13px; color: var(--text-2); display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Package R baremesipp · exécuté dans votre navigateur</div>
+    <h1>Du salaire brut au salaire net, de 1979 à 2025</h1>
+    <p>Entrez un salaire brut annuel : la page calcule les cotisations salariales, la CSG, la CRDS, l'impôt sur le revenu et les aides aux bas salaires sous les règles de l'année choisie, puis compare avec les autres années. Tous les calculs sont faits par le code R du package <a href="https://github.com/m-gty/baremesipp">baremesipp</a>, exécuté localement grâce à <a href="https://docs.r-wasm.org/webr/latest/">webR</a>.</p>
+  </header>
+
+  <div class="layout">
+    <form class="card" id="form" autocomplete="off" onsubmit="return false">
+      <h2>Votre situation</h2>
+      <p class="sub">Les résultats se mettent à jour automatiquement.</p>
+
+      <div class="field">
+        <label for="brut">Salaire brut annuel</label>
+        <div class="money"><input type="number" id="brut" min="0" step="500" value="40000" inputmode="numeric"><span class="unit">€</span></div>
+        <input type="range" id="brut-range" min="0" max="200000" step="500" value="40000" aria-label="Salaire brut annuel (curseur)">
+        <div class="hint" id="smic-hint">&nbsp;</div>
+      </div>
+
+      <div class="field">
+        <label for="annee">Règles de l'année</label>
+        <select id="annee"></select>
+      </div>
+
+      <div class="field">
+        <label class="check"><input type="checkbox" id="constant" checked>
+          <span>Montants en euros de 2025<small>Le salaire est converti dans la monnaie et les prix de l'année choisie, puis les résultats sont reconvertis.</small></span></label>
+      </div>
+
+      <div class="field">
+        <span class="label">Statut</span>
+        <div class="seg">
+          <input type="radio" name="cadre" id="cadre-non" value="0" checked><label for="cadre-non">Non-cadre</label>
+          <input type="radio" name="cadre" id="cadre-oui" value="1"><label for="cadre-oui">Cadre</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label">Foyer fiscal</span>
+        <div class="seg">
+          <input type="radio" name="couple" id="couple-non" value="0" checked><label for="couple-non">Célibataire</label>
+          <input type="radio" name="couple" id="couple-oui" value="1"><label for="couple-oui">Couple</label>
+        </div>
+      </div>
+
+      <fieldset class="conjoint" id="conjoint" hidden>
+        <div class="field">
+          <label for="brut2">Salaire brut annuel du conjoint</label>
+          <div class="money"><input type="number" id="brut2" min="0" step="500" value="25000" inputmode="numeric"><span class="unit">€</span></div>
+        </div>
+        <div class="field">
+          <span class="label">Statut du conjoint</span>
+          <div class="seg">
+            <input type="radio" name="cadre2" id="cadre2-non" value="0" checked><label for="cadre2-non">Non-cadre</label>
+            <input type="radio" name="cadre2" id="cadre2-oui" value="1"><label for="cadre2-oui">Cadre</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="field">
+        <label for="enfants">Enfants à charge</label>
+        <select id="enfants">
+          <option value="0" selected>Aucun</option><option value="1">1</option><option value="2">2</option>
+          <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+        </select>
+        <div class="hint" id="parts-hint">1 part de quotient familial</div>
+      </div>
+
+      <div class="field">
+        <span class="label">Options de calcul</span>
+        <label class="check"><input type="checkbox" id="decote" checked><span>Décote<small>À partir des revenus 1981</small></span></label>
+        <label class="check"><input type="checkbox" id="plafonnement" checked><span>Plafonnement du quotient familial<small>À partir des revenus 1981</small></span></label>
+        <label class="check"><input type="checkbox" id="aides" checked><span>Aides aux bas salaires<small>Prime pour l'emploi, RSA activité, prime d'activité</small></span></label>
+      </div>
+    </form>
+
+    <main class="results" aria-live="polite">
+      <div class="status" id="status"><div class="spinner"></div><span id="status-text">Chargement de R dans le navigateur…</span></div>
+
+      <section class="kpis" id="kpis">
+        <div class="kpi hero"><div class="k">Net après impôt</div><div class="v" id="k-net">–</div><div class="d" id="k-net-m">&nbsp;</div></div>
+        <div class="kpi"><div class="k">Taux de prélèvements</div><div class="v" id="k-taux">–</div><div class="d">part du brut, nette des aides</div></div>
+        <div class="kpi"><div class="k">Impôt sur le revenu</div><div class="v" id="k-ir">–</div><div class="d" id="k-ir-d">&nbsp;</div></div>
+        <div class="kpi"><div class="k">Cotisations, CSG et CRDS</div><div class="v" id="k-soc">–</div><div class="d" id="k-soc-d">&nbsp;</div></div>
+      </section>
+
+      <section class="card">
+        <h2>Du brut au net</h2>
+        <p class="sub" id="wf-sub">Ce qui est prélevé sur le salaire brut, et ce qui est versé en aides.</p>
+        <div class="chart-box"><canvas id="c-waterfall" role="img" aria-label="Graphique en cascade du salaire brut au salaire net"></canvas></div>
+      </section>
+
+      <section class="card">
+        <h2>Selon le niveau de salaire</h2>
+        <p class="sub" id="prof-sub">Part du salaire brut prélevée, pour des salaires de 10 000 à 150 000 €. Le point marque votre salaire.</p>
+        <ul class="legend" id="leg-prof"></ul>
+        <div class="chart-box tall"><canvas id="c-profile" role="img" aria-label="Taux de prélèvements selon le salaire brut"></canvas></div>
+      </section>
+
+      <section class="card">
+        <h2>Le même salaire, sous les règles de chaque année</h2>
+        <p class="sub" id="hist-sub">Salaire de pouvoir d'achat constant (euros de 2025), règles de 1979 à 2025.</p>
+        <div class="tabs" role="group" aria-label="Unité du graphique">
+          <button type="button" data-unit="pct" aria-pressed="true">En % du brut</button>
+          <button type="button" data-unit="eur" aria-pressed="false">En euros de 2025</button>
+        </div>
+        <ul class="legend" id="leg-hist"></ul>
+        <div class="chart-box tall"><canvas id="c-history" role="img" aria-label="Prélèvements selon l'année des règles"></canvas></div>
+      </section>
+
+      <section class="card">
+        <h2>Le détail</h2>
+        <p class="sub">Résultat de <code id="call">prelevements_salaire()</code></p>
+        <div style="overflow-x:auto"><table id="detail"><thead><tr><th>Élément</th><th>Montant annuel</th><th>Par mois</th><th>% du brut</th></tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="card notes">
+        <h2>Ce que la page calcule, et ce qu'elle ne calcule pas</h2>
+        <ul>
+          <li>Salariés du secteur privé (régime général, assurance chômage, retraite complémentaire). Les cotisations patronales ne sont pas calculées.</li>
+          <li>L'impôt est celui du barème, avec le quotient familial, son plafonnement et la décote. Les réductions et crédits d'impôt ne sont pas pris en compte, sauf la prime pour l'emploi.</li>
+          <li>Les aides supposent un foyer locataire sans aide au logement, et des enfants de moins de 14 ans. Une part importante des personnes éligibles ne demande pas la prime d'activité.</li>
+          <li>Les parts de quotient familial suivent la règle générale (une demi-part par enfant pour les deux premiers, une part à partir du troisième). Les demi-parts spécifiques, comme celle des parents isolés, ne sont pas prises en compte.</li>
+          <li>Les paramètres viennent des <a href="https://www.ipp.eu/baremes-ipp/">Barèmes IPP</a> de l'Institut des politiques publiques, et l'indice des prix de l'INSEE.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <span>Package et page : <a href="https://github.com/m-gty/baremesipp">github.com/m-gty/baremesipp</a></span>
+    <span id="r-version">R exécuté avec webR</span>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script type="module">
+// ---------------------------------------------------------------------------
+// Configuration
+// ---------------------------------------------------------------------------
+const WEBR_VERSION = "0.6.1";
+const WEBR_BASE = `https://webr.r-wasm.org/v${WEBR_VERSION}/`;
+// Fichiers du package, lus directement sur GitHub : la page suit la branche master.
+const params = new URLSearchParams(location.search);
+const PKG_BASE = params.get("pkg") || "https://raw.githubusercontent.com/m-gty/baremesipp/master/";
+const R_FILES = ["aides.R", "calc_decote.R", "calc_ir.R", "data.R", "euros_constants.R",
+                 "ppe.R", "prelevements.R", "salaires.R"];
+const DATA_FILES = ["abattements_salaires", "bareme_ir", "cotisations_salariales", "decote", "ipc",
+                    "plafonnement_qf", "ppe", "prelevements_sociaux", "prestations_activite", "smic"];
+const ANNEE_MIN = 1979, ANNEE_MAX = 2025, ANNEE_REF = 2025;
+
+// ---------------------------------------------------------------------------
+// Code R : charge le package dans un environnement, puis définit la simulation
+// ---------------------------------------------------------------------------
+const R_SETUP = String.raw`
+pkg <- new.env()
+for (f in list.files("/pkg/data", full.names = TRUE)) load(f, envir = pkg)
+for (f in list.files("/pkg/R", full.names = TRUE)) {
+  code <- readLines(f, encoding = "UTF-8", warn = FALSE)
+  # Les fonctions lisent leurs données avec baremesipp:: ; ici elles sont dans pkg
+  code <- gsub("baremesipp::", "", code, fixed = TRUE)
+  eval(parse(text = code, encoding = "UTF-8"), envir = pkg)
+}
+
+local({
+  num <- function(v) {
+    s <- ifelse(is.na(v), "null", formatC(v, digits = 10, format = "g"))
+    paste0("[", paste(s, collapse = ","), "]")
+  }
+  obj <- function(x) {
+    paste0("{", paste0('"', names(x), '":', vapply(x, function(v)
+      if (is.list(v)) obj(v) else num(v), ""), collapse = ","), "}")
+  }
+
+  parts_foyer <- function(couple, enfants) {
+    (if (couple) 2 else 1) + 0.5 * min(enfants, 2) + max(enfants - 2, 0)
+  }
+
+  calcul <- function(brut, annee, constant, o) {
+    args <- list(brut = brut, annee = annee, brut2 = if (o$couple) o$brut2 else 0,
+                 parts = parts_foyer(o$couple, o$enfants), couple = o$couple,
+                 decote = o$decote && annee >= 1981,
+                 plafonnement = o$plafonnement && annee >= 1981,
+                 cadre = o$cadre, cadre2 = o$cadre2,
+                 personnes_charge = o$enfants, aides = o$aides)
+    if (constant) {
+      args$annee_ref <- ${ANNEE_REF}
+      do.call(prelevements_salaire_constant, args)
+    } else {
+      do.call(prelevements_salaire, args)
+    }
+  }
+
+  simuler <<- function(brut, annee, constant, couple, brut2, enfants, cadre, cadre2,
+                       decote, plafonnement, aides, prof_max) {
+    o <- list(couple = couple, brut2 = brut2, enfants = enfants, cadre = cadre,
+              cadre2 = cadre2, decote = decote, plafonnement = plafonnement, aides = aides)
+    res <- tryCatch({
+      f <- facteur_euros_constants(annee, ${ANNEE_REF})
+      principal <- calcul(brut, annee, constant, o)
+      smic_annee <- smic$smic_annuel[smic$annee == annee]
+      if (constant) smic_annee <- smic_annee * f
+
+      grille <- seq(10000, prof_max, length.out = 81)
+      if (!constant) grille <- grille / f
+      profil <- calcul(grille, annee, constant, o)
+
+      # Même salaire réel sous les règles de chaque année, en euros de 2025
+      brut_ref <- if (constant) brut else brut * f
+      o_ref <- o
+      if (couple && !constant) o_ref$brut2 <- brut2 * f
+      annees <- ${ANNEE_MIN}:${ANNEE_MAX}
+      hist <- do.call(rbind, lapply(annees, function(a) calcul(brut_ref, a, TRUE, o_ref)))
+      hist$annee <- annees
+
+      list(principal = as.list(principal), profil = as.list(profil),
+           historique = as.list(hist),
+           info = list(smic = smic_annee, parts = parts_foyer(couple, enfants),
+                       facteur = f))
+    }, error = function(e) e)
+    if (inherits(res, "error")) {
+      return(paste0('{"error":"', gsub('["\\\\]', "'", conditionMessage(res)), '"}'))
+    }
+    obj(res)
+  }
+}, envir = new.env(parent = pkg))
+`;
+
+// ---------------------------------------------------------------------------
+// Outils
+// ---------------------------------------------------------------------------
+const $ = (id) => document.getElementById(id);
+const fmt0 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+const fmtPct = new Intl.NumberFormat("fr-FR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function monnaie(annee, constant) {
+  if (constant) return "€";
+  if (annee <= 1959) return "AF";
+  if (annee <= 2000) return "F";
+  return "€";
+}
+const money = (v, unit = "€") => `${fmt0.format(Math.round(v))} ${unit}`;
+
+function setStatus(text, isError = false) {
+  const s = $("status");
+  if (!text) { s.hidden = true; return; }
+  s.hidden = false;
+  s.classList.toggle("error", isError);
+  $("status-text").textContent = text;
+}
+
+// ---------------------------------------------------------------------------
+// Formulaire
+// ---------------------------------------------------------------------------
+const anneeSel = $("annee");
+for (let a = ANNEE_MAX; a >= ANNEE_MIN; a--) {
+  const o = document.createElement("option");
+  o.value = a; o.textContent = a === ANNEE_MAX ? `${a} (revenus 2025)` : a;
+  anneeSel.append(o);
+}
+
+function lireForm() {
+  const radio = (n) => document.querySelector(`input[name="${n}"]:checked`).value === "1";
+  return {
+    brut: Math.max(0, Number($("brut").value) || 0),
+    annee: Number(anneeSel.value),
+    constant: $("constant").checked,
+    couple: radio("couple"),
+    brut2: Math.max(0, Number($("brut2").value) || 0),
+    enfants: Number($("enfants").value),
+    cadre: radio("cadre"),
+    cadre2: radio("cadre2"),
+    decote: $("decote").checked,
+    plafonnement: $("plafonnement").checked,
+    aides: $("aides").checked,
+  };
+}
+
+function majForm() {
+  const f = lireForm();
+  $("conjoint").hidden = !f.couple;
+  const parts = (f.couple ? 2 : 1) + 0.5 * Math.min(f.enfants, 2) + Math.max(f.enfants - 2, 0);
+  $("parts-hint").textContent = `${String(parts).replace(".", ",")} part${parts > 1 ? "s" : ""} de quotient familial`;
+  const unit = monnaie(f.annee, f.constant);
+  document.querySelectorAll(".money .unit").forEach((e) => (e.textContent = unit));
+  const old = f.annee < 1981;
+  $("decote").disabled = old; $("plafonnement").disabled = old;
+}
+
+// ---------------------------------------------------------------------------
+// Graphiques
+// ---------------------------------------------------------------------------
+let charts = {};
+let dernier = null;
+let unitHist = "pct";
+
+function palette() {
+  return {
+    net: css("--s-net"), cot: css("--s-cot"), csg: css("--s-csg"), ir: css("--s-ir"),
+    aides: css("--s-aides"), total: css("--s-total"), text: css("--text"), text2: css("--text-2"),
+    grid: css("--grid"), surface: css("--surface"), border: css("--border"),
+  };
+}
+
+function baseOptions(p) {
+  return {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: p.surface, titleColor: p.text, bodyColor: p.text, borderColor: p.border,
+        borderWidth: 1, padding: 10, boxPadding: 4, usePointStyle: true,
+        titleFont: { family: "Inter", weight: "600" }, bodyFont: { family: "Inter" },
+      },
+    },
+    scales: {
+      x: { grid: { display: false }, border: { color: p.border }, ticks: { color: p.text2, font: { family: "Inter", size: 12 } } },
+      y: { grid: { color: p.grid }, border: { display: false }, ticks: { color: p.text2, font: { family: "Inter", size: 12 } } },
+    },
+  };
+}
+
+function legende(el, items) {
+  el.innerHTML = items.map((i) => i.line
+    ? `<li><span class="ln" style="border-color:${i.color}"></span>${i.label}</li>`
+    : `<li><span class="sw" style="background:${i.color}"></span>${i.label}</li>`).join("");
+}
+
+// Ligne verticale au salaire de l'utilisateur
+const marqueur = {
+  id: "marqueur",
+  afterDatasetsDraw(chart, _a, opts) {
+    if (opts.x == null) return;
+    const { ctx, chartArea, scales } = chart;
+    const x = scales.x.getPixelForValue(opts.x);
+    if (x < chartArea.left || x > chartArea.right) return;
+    ctx.save();
+    ctx.strokeStyle = opts.color; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke();
+    ctx.restore();
+  },
+};
+
+function dessiner(d, f) {
+  const p = palette();
+  const unit = monnaie(f.annee, f.constant);
+  const r = d.principal;
+  const v = (k) => r[k][0];
+  const soc = v("cotisations") + v("csg") + v("crds");
+  const aides = v("ppe") + v("rsa_activite") + v("prime_activite");
+
+  // --- Indicateurs
+  $("k-net").textContent = money(v("net_apres_impot"), unit);
+  $("k-net-m").textContent = `soit ${money(v("net_apres_impot") / 12, unit)} par mois`;
+  $("k-taux").textContent = v("brut") > 0 ? fmtPct.format(v("taux_prelevements")) : "–";
+  $("k-ir").textContent = money(v("impot"), unit);
+  $("k-ir-d").textContent = aides > 0 ? `aides perçues : ${money(aides, unit)}` : `net imposable : ${money(v("net_imposable"), unit)}`;
+  $("k-soc").textContent = money(soc, unit);
+  $("k-soc-d").textContent = `dont CSG et CRDS : ${money(v("csg") + v("crds"), unit)}`;
+  const smic = d.info.smic[0];
+  $("smic-hint").textContent = smic ? `soit ${String((f.brut / smic).toFixed(2)).replace(".", ",")} SMIC de ${f.annee}` : "";
+
+  const unitTxt = f.constant ? `euros de ${ANNEE_REF}` : (unit === "€" ? "euros courants" : "francs courants");
+  $("wf-sub").textContent = `Règles de ${f.annee}, montants annuels du foyer en ${unitTxt}.`;
+
+  // --- Cascade
+  const etapes = [
+    { label: "Salaire brut", val: v("brut"), type: "total", color: p.total },
+    { label: "Cotisations", val: -v("cotisations"), color: p.cot },
+    { label: "CSG", val: -v("csg"), color: p.csg },
+    { label: "CRDS", val: -v("crds"), color: p.csg },
+    { label: "Impôt", val: -v("impot"), color: p.ir },
+  ];
+  if (f.aides && aides > 0) etapes.push({ label: "Aides", val: aides, color: p.aides });
+  etapes.push({ label: "Net après impôt", val: v("net_apres_impot"), type: "total", color: p.net });
+  let cumul = 0;
+  const bars = etapes.map((e) => {
+    if (e.type === "total") { cumul = e.val; return [0, e.val]; }
+    const a = cumul; cumul += e.val; return [a, cumul];
+  });
+  const wfData = {
+    labels: etapes.map((e) => e.label),
+    datasets: [{
+      data: bars, backgroundColor: etapes.map((e) => e.color), borderRadius: 4, borderSkipped: false,
+      maxBarThickness: 64,
+    }],
+  };
+  const wfOpt = baseOptions(p);
+  wfOpt.interaction = { mode: "nearest", intersect: false, axis: "x" };
+  wfOpt.plugins.tooltip.callbacks = {
+    label: (c) => {
+      const e = etapes[c.dataIndex];
+      const s = e.type === "total" ? "" : e.val >= 0 ? "+ " : "− ";
+      const pct = v("brut") > 0 ? ` (${fmtPct.format(Math.abs(e.val) / v("brut"))} du brut)` : "";
+      return ` ${s}${money(Math.abs(e.val), unit)}${pct}`;
+    },
+  };
+  wfOpt.scales.y.ticks.callback = (x) => fmt0.format(x);
+  wfOpt.scales.y.beginAtZero = true;
+  remplacer("waterfall", { type: "bar", data: wfData, options: wfOpt });
+
+  // --- Profil selon le salaire
+  const pr = d.profil;
+  // pr.brut est le brut du foyer : on retire le salaire (fixe) du conjoint
+  const xs = pr.brut.map((b) => (f.couple ? b - f.brut2 : b));
+  const share = (k) => pr[k].map((x, i) => (pr.brut[i] > 0 ? (100 * x) / pr.brut[i] : 0));
+  const csgcrds = pr.csg.map((x, i) => (100 * (x + pr.crds[i])) / pr.brut[i]);
+  const totalLabel = f.aides ? "Total, net des aides" : "Total des prélèvements";
+  const profDatasets = [
+    area("Cotisations", share("cotisations"), p.cot, p.surface, xs),
+    area("CSG et CRDS", csgcrds, p.csg, p.surface, xs),
+    area("Impôt sur le revenu", share("impot"), p.ir, p.surface, xs),
+    ...(f.aides ? [area("Aides (en négatif)", pr.ppe.map((x, i) => (-100 * (x + pr.rsa_activite[i] + pr.prime_activite[i])) / pr.brut[i]), p.aides, p.surface, xs)] : []),
+    line(totalLabel, pr.taux_prelevements.map((t) => 100 * t), p.net, xs),
+  ];
+  const legProf = [
+    { label: "Cotisations", color: p.cot }, { label: "CSG et CRDS", color: p.csg },
+    { label: "Impôt sur le revenu", color: p.ir },
+    ...(f.aides ? [{ label: "Aides (en négatif)", color: p.aides }] : []),
+    { label: totalLabel, color: p.net, line: true },
+  ];
+  legende($("leg-prof"), legProf);
+  const prOpt = baseOptions(p);
+  prOpt.scales.x = { ...prOpt.scales.x, type: "linear", min: xs[0], max: xs[xs.length - 1],
+    ticks: { ...prOpt.scales.x.ticks, callback: (x) => `${fmt0.format(x / 1000)} k` },
+    title: { display: true, text: f.couple ? `Salaire brut annuel du premier salarié (${unit})` : `Salaire brut annuel (${unit})`, color: p.text2, font: { family: "Inter", size: 12 } } };
+  prOpt.scales.y.stacked = true;
+  prOpt.scales.y.ticks.callback = (x) => `${x} %`;
+  prOpt.plugins.marqueur = { x: f.brut, color: p.text2 };
+  prOpt.plugins.tooltip.callbacks = {
+    title: (c) => `Salaire brut : ${money(c[0].parsed.x, unit)}`,
+    label: (c) => ` ${c.dataset.label} : ${fmtPct.format(c.parsed.y / 100)}`,
+  };
+  prOpt.plugins.tooltip.itemSort = (a, b) => b.datasetIndex - a.datasetIndex;
+  $("prof-sub").textContent = `Part du salaire brut prélevée, règles de ${f.annee}${f.couple ? ", à salaire du conjoint inchangé" : ""}. La ligne pointillée marque votre salaire.`;
+  remplacer("profile", { type: "line", data: { datasets: profDatasets }, options: prOpt, plugins: [marqueur] });
+
+  // --- Historique
+  dessinerHistorique(d, f, p);
+
+  // --- Tableau
+  const lignes = [
+    ["Salaire brut", v("brut"), p.total],
+    ["Cotisations salariales", -v("cotisations"), p.cot],
+    ["CSG", -v("csg"), p.csg],
+    ["CRDS", -v("crds"), p.csg],
+    ["Salaire net imposable", v("net_imposable"), null, "info"],
+    ["Impôt sur le revenu", -v("impot"), p.ir],
+  ];
+  if (f.aides) {
+    if (f.annee >= 2000 && f.annee <= 2015) lignes.push(["Prime pour l'emploi", v("ppe"), p.aides]);
+    if (f.annee >= 2009 && f.annee <= 2015) lignes.push(["RSA activité", v("rsa_activite"), p.aides]);
+    if (f.annee >= 2016) lignes.push(["Prime d'activité", v("prime_activite"), p.aides]);
+  }
+  lignes.push(["Net après impôt et aides", v("net_apres_impot"), p.net, "total"]);
+  const b = v("brut");
+  $("detail").tBodies[0].innerHTML = lignes.map(([lab, val, col, t]) => `
+    <tr class="${t === "total" ? "total" : ""}">
+      <td>${col ? `<span class="dot" style="background:${col}"></span>` : `<span class="dot"></span>`}${lab}</td>
+      <td>${t === "info" ? "" : val > 0 && lab !== "Salaire brut" && t !== "total" ? "+ " : ""}${money(t === "info" ? val : Math.abs(val), unit).replace(/^/, val < 0 ? "− " : "")}</td>
+      <td>${money(Math.abs(val) / 12, unit)}</td>
+      <td>${b > 0 ? fmtPct.format(Math.abs(val) / b) : "–"}</td>
+    </tr>`).join("");
+  const args = [`${Math.round(f.brut)}`, `annee = ${f.annee}`];
+  if (f.couple) args.push(`brut2 = ${Math.round(f.brut2)}`, "couple = TRUE");
+  if (d.info.parts[0] !== 1) args.push(`parts = ${d.info.parts[0]}`);
+  if (f.cadre) args.push("cadre = TRUE");
+  if (f.couple && f.cadre2) args.push("cadre2 = TRUE");
+  if (f.decote && f.annee >= 1981) args.push("decote = TRUE");
+  if (f.plafonnement && f.annee >= 1981) args.push("plafonnement = TRUE");
+  if (f.aides) args.push("aides = TRUE");
+  if (f.enfants) args.push(`personnes_charge = ${f.enfants}`);
+  $("call").textContent = `${f.constant ? "prelevements_salaire_constant" : "prelevements_salaire"}(${args.join(", ")})`;
+}
+
+function area(label, ys, color, surface, xs) {
+  return {
+    label, data: ys.map((y, i) => ({ x: xs[i], y })), fill: true, stack: "s",
+    backgroundColor: color, borderColor: surface, borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 0, tension: 0,
+  };
+}
+function line(label, ys, color, xs, dash = []) {
+  return {
+    label, data: ys.map((y, i) => ({ x: xs[i], y })), fill: false, stack: "line",
+    borderColor: color, backgroundColor: color, borderWidth: 2.5, borderDash: dash, pointRadius: 0,
+    pointHoverRadius: 5, pointHoverBorderWidth: 2, pointHoverBorderColor: palette().surface, tension: 0,
+  };
+}
+
+function dessinerHistorique(d, f, p) {
+  const h = d.historique;
+  const labels = h.annee;
+  const pct = unitHist === "pct";
+  const conv = (arr) => arr.map((x, i) => (pct ? (100 * x) / h.brut[i] : x));
+  const csgcrds = h.csg.map((x, i) => x + h.crds[i]);
+  const aides = h.ppe.map((x, i) => x + h.rsa_activite[i] + h.prime_activite[i]);
+  const net = h.net_apres_impot;
+  const ds = [
+    bar("Cotisations", conv(h.cotisations), p.cot, p.surface),
+    bar("CSG et CRDS", conv(csgcrds), p.csg, p.surface),
+    bar("Impôt sur le revenu", conv(h.impot), p.ir, p.surface),
+  ];
+  const items = [
+    { label: "Cotisations", color: p.cot }, { label: "CSG et CRDS", color: p.csg },
+    { label: "Impôt sur le revenu", color: p.ir },
+  ];
+  if (pct) {
+    const totalLabel = f.aides ? "Total, net des aides" : "Total des prélèvements";
+    if (f.aides) {
+      ds.push(bar("Aides (en négatif)", aides.map((x, i) => (-100 * x) / h.brut[i]), p.aides, p.surface));
+      items.push({ label: "Aides (en négatif)", color: p.aides });
+    }
+    ds.push({ ...line(totalLabel, [], p.net, []), type: "line", data: h.taux_prelevements.map((t) => 100 * t) });
+    items.push({ label: totalLabel, color: p.net, line: true });
+  } else {
+    // Net hors aides + prélèvements = brut ; les aides s'empilent au-dessus
+    ds.unshift(bar(f.aides ? "Net après impôt, hors aides" : "Net après impôt", net.map((x, i) => x - aides[i]), p.net, p.surface));
+    items.unshift({ label: f.aides ? "Net après impôt, hors aides" : "Net après impôt", color: p.net });
+    if (f.aides) {
+      ds.push(bar("Aides perçues", aides, p.aides, p.surface));
+      items.push({ label: "Aides perçues", color: p.aides });
+    }
+  }
+  legende($("leg-hist"), items);
+  const o = baseOptions(p);
+  o.scales.x.stacked = true;
+  o.scales.x.ticks.maxRotation = 0;
+  o.scales.x.ticks.autoSkipPadding = 12;
+  o.scales.y.stacked = true;
+  o.scales.y.beginAtZero = true;
+  o.scales.y.ticks.callback = (x) => (pct ? `${x} %` : fmt0.format(x));
+  o.plugins.tooltip.callbacks = {
+    title: (c) => `Règles de ${c[0].label}`,
+    label: (c) => ` ${c.dataset.label} : ${pct ? fmtPct.format(c.parsed.y / 100) : money(c.parsed.y)}`,
+  };
+  o.plugins.tooltip.itemSort = (a, b) => b.datasetIndex - a.datasetIndex;
+  const iSel = labels.indexOf(f.annee);
+  ds.forEach((s) => { if (s.type !== "line") s.backgroundColor = labels.map((a, i) => (i === iSel || iSel < 0 ? s._c : s._c + "99")); });
+  const ref = f.constant ? f.brut : f.brut * d.info.facteur[0];
+  $("hist-sub").textContent = `Salaire brut de ${money(ref)} en euros de ${ANNEE_REF} (même pouvoir d'achat), sous les règles de chaque année. L'année choisie est mise en avant.`;
+  remplacer("history", { type: "bar", data: { labels, datasets: ds }, options: o });
+}
+function bar(label, data, color, surface) {
+  return { label, data, backgroundColor: color, _c: color, borderColor: surface, borderWidth: { top: 1 }, borderSkipped: false, stack: "s", categoryPercentage: 0.9, barPercentage: 1 };
+}
+
+function remplacer(nom, cfg) {
+  if (charts[nom]) charts[nom].destroy();
+  charts[nom] = new Chart($(`c-${nom}`), cfg);
+}
+
+document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => {
+  unitHist = b.dataset.unit;
+  document.querySelectorAll(".tabs button").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  if (dernier) dessinerHistorique(dernier.d, dernier.f, palette());
+}));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (dernier) dessiner(dernier.d, dernier.f); });
+
+// ---------------------------------------------------------------------------
+// webR
+// ---------------------------------------------------------------------------
+let webR = null;
+let enCours = false, enAttente = false;
+
+async function demarrer() {
+  try {
+    const { WebR } = await import(`${WEBR_BASE}webr.mjs`);
+    webR = new WebR({ baseUrl: WEBR_BASE, interactive: false });
+    await webR.init();
+
+    setStatus("Chargement du package baremesipp…");
+    await webR.FS.mkdir("/pkg");
+    await webR.FS.mkdir("/pkg/R");
+    await webR.FS.mkdir("/pkg/data");
+    const get = async (chemin) => {
+      const r = await fetch(PKG_BASE + chemin);
+      if (!r.ok) throw new Error(`Impossible de télécharger ${chemin} (${r.status})`);
+      return new Uint8Array(await r.arrayBuffer());
+    };
+    await Promise.all([
+      ...R_FILES.map(async (f) => webR.FS.writeFile(`/pkg/R/${f}`, await get(`R/${f}`))),
+      ...DATA_FILES.map(async (f) => webR.FS.writeFile(`/pkg/data/${f}.rda`, await get(`data/${f}.rda`))),
+    ]);
+    await webR.evalRVoid(R_SETUP);
+    const version = await webR.evalRString("paste(R.version$major, R.version$minor, sep = '.')");
+    $("r-version").textContent = `R ${version} exécuté dans le navigateur avec webR ${WEBR_VERSION}`;
+    setStatus("");
+    calculer();
+  } catch (e) {
+    console.error(e);
+    setStatus(`Le chargement a échoué : ${e.message}. Rechargez la page, ou essayez un navigateur récent.`, true);
+  }
+}
+
+async function calculer() {
+  majForm();
+  if (!webR) return;
+  if (enCours) { enAttente = true; return; }
+  enCours = true;
+  const f = lireForm();
+  const profMax = Math.max(150000, Math.ceil((f.brut * 1.25) / 10000) * 10000);
+  const L = (b) => (b ? "TRUE" : "FALSE");
+  const appel = `simuler(${f.brut}, ${f.annee}, ${L(f.constant)}, ${L(f.couple)}, ${f.brut2}, ${f.enfants}, ` +
+    `${L(f.cadre)}, ${L(f.cadre2)}, ${L(f.decote)}, ${L(f.plafonnement)}, ${L(f.aides)}, ${profMax})`;
+  try {
+    const d = JSON.parse(await webR.evalRString(appel));
+    if (d.error) { setStatus(`Calcul impossible : ${d.error}`, true); }
+    else { setStatus(""); dernier = { d, f }; dessiner(d, f); }
+  } catch (e) {
+    console.error(e);
+    setStatus(`Erreur : ${e.message}`, true);
+  } finally {
+    enCours = false;
+    if (enAttente) { enAttente = false; calculer(); }
+  }
+}
+
+// Saisie
+let minuteur;
+const differer = () => { clearTimeout(minuteur); minuteur = setTimeout(calculer, 200); };
+$("brut").addEventListener("input", () => { $("brut-range").value = $("brut").value; differer(); });
+$("brut-range").addEventListener("input", () => { $("brut").value = $("brut-range").value; differer(); });
+$("form").addEventListener("change", (e) => { if (e.target.id !== "brut-range") differer(); });
+$("brut2").addEventListener("input", differer);
+
+majForm();
+demarrer();
+</script>
+</body>
+</html>
