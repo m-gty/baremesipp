@@ -114,6 +114,8 @@ input[type="number"], select {
 }
 input[type="number"]:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 input[type="range"] { width: 100%; accent-color: var(--accent); margin: 10px 0 0; }
+.year-value { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 8px 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+.range-ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); }
 .money { position: relative; }
 .money input { padding-right: 40px; font-size: 18px; font-weight: 600; }
 .money span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-2); font-size: 14px; }
@@ -202,7 +204,9 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 
       <div class="field">
         <label for="annee">Règles de l'année</label>
-        <select id="annee"></select>
+        <div class="year-value" id="annee-val" aria-hidden="true">2025</div>
+        <input type="range" id="annee" min="1979" max="2025" step="1" value="2025">
+        <div class="range-ends"><span>1979</span><span>2025</span></div>
       </div>
 
       <div class="field">
@@ -437,11 +441,7 @@ function setStatus(text, isError = false) {
 // Formulaire
 // ---------------------------------------------------------------------------
 const anneeSel = $("annee");
-for (let a = ANNEE_MAX; a >= ANNEE_MIN; a--) {
-  const o = document.createElement("option");
-  o.value = a; o.textContent = a === ANNEE_MAX ? `${a} (revenus 2025)` : a;
-  anneeSel.append(o);
-}
+anneeSel.min = ANNEE_MIN; anneeSel.max = ANNEE_MAX;
 
 function lireForm() {
   const radio = (n) => document.querySelector(`input[name="${n}"]:checked`).value === "1";
@@ -467,6 +467,8 @@ function majForm() {
   $("parts-hint").textContent = `${String(parts).replace(".", ",")} part${parts > 1 ? "s" : ""} de quotient familial`;
   const unit = monnaie(f.annee, f.constant);
   document.querySelectorAll(".money .unit").forEach((e) => (e.textContent = unit));
+  $("annee-val").textContent = f.annee;
+  anneeSel.setAttribute("aria-valuetext", `Règles de ${f.annee}`);
   const old = f.annee < 1981;
   $("decote").disabled = old; $("plafonnement").disabled = old;
 }
@@ -719,10 +721,18 @@ function dessinerHistorique(d, f, p) {
     label: (c) => ` ${c.dataset.label} : ${pct ? fmtPct.format(c.parsed.y / 100) : money(c.parsed.y)}`,
   };
   o.plugins.tooltip.itemSort = (a, b) => b.datasetIndex - a.datasetIndex;
+  // Un clic sur une année l'applique au curseur
+  o.onClick = (_e, els, chart) => {
+    const i = els.length ? els[0].index : null;
+    if (i == null) return;
+    anneeSel.value = chart.data.labels[i];
+    majForm(); calculer();
+  };
+  o.onHover = (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; };
   const iSel = labels.indexOf(f.annee);
   ds.forEach((s) => { if (s.type !== "line") s.backgroundColor = labels.map((a, i) => (i === iSel || iSel < 0 ? s._c : s._c + "99")); });
   const ref = f.constant ? f.brut : f.brut * d.info.facteur[0];
-  $("hist-sub").textContent = `Salaire brut de ${money(ref)} en euros de ${ANNEE_REF} (même pouvoir d'achat), sous les règles de chaque année. L'année choisie est mise en avant.`;
+  $("hist-sub").textContent = `Salaire brut de ${money(ref)} en euros de ${ANNEE_REF} (même pouvoir d'achat), sous les règles de chaque année. L'année choisie est mise en avant ; cliquez sur une barre pour changer d'année.`;
   remplacer("history", { type: "bar", data: { labels, datasets: ds }, options: o });
 }
 function bar(label, data, color, surface) {
@@ -807,6 +817,7 @@ $("brut").addEventListener("input", () => { $("brut-range").value = $("brut").va
 $("brut-range").addEventListener("input", () => { $("brut").value = $("brut-range").value; differer(); });
 $("form").addEventListener("change", (e) => { if (e.target.id !== "brut-range") differer(); });
 $("brut2").addEventListener("input", differer);
+anneeSel.addEventListener("input", () => { majForm(); differer(); });
 
 majForm();
 demarrer();
